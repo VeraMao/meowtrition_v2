@@ -701,7 +701,7 @@ export function FeedingCoach({
         timestamp: new Date(),
         actions: risk === 'obesity' || risk === 'urinary' ? [
           { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) },
-          { id: 'no-thanks', label: 'No, thanks', action: () => handleHealthRiskNoThanks() }
+          { id: 'keep-monitoring', label: risk === 'urinary' ? 'Keep Monitoring' : 'No, thanks', action: () => handleHealthRiskNoThanks() }
         ] : [
           { id: 'understand', label: 'I understand', action: () => showContinueHelping() }
         ],
