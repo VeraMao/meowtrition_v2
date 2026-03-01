@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, Star, ChevronDown } from 'lucide-react';
 import { CommunityPost } from '../types';
 import { mockCommunityPosts } from '../data/mockCommunityPosts';
@@ -11,6 +11,7 @@ interface ShareZoneProps {
 }
 
 export function ShareZone({ onBack, currentCatName }: ShareZoneProps) {
+  const feedRef = useRef<HTMLDivElement>(null);
   const [posts, setPosts] = useState<CommunityPost[]>(mockCommunityPosts);
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
@@ -18,6 +19,13 @@ export function ShareZone({ onBack, currentCatName }: ShareZoneProps) {
   const [newPostRating, setNewPostRating] = useState(5);
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [showTagDropdown, setShowTagDropdown] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    if (feedRef.current) {
+      feedRef.current.scrollTop = 0;
+    }
+  }, []);
 
   const allTags = Array.from(
     new Set(posts.flatMap((post) => post.tags))
@@ -189,7 +197,7 @@ export function ShareZone({ onBack, currentCatName }: ShareZoneProps) {
       </div>
 
       {/* Posts Feed */}
-      <div className="flex-1 overflow-y-auto p-4 pb-6 space-y-4">
+      <div ref={feedRef} className="flex-1 overflow-y-auto p-4 pb-6 space-y-4">
         {filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No posts found with this filter</p>

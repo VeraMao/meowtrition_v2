@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SplashScreen } from './screens/SplashScreen';
 import { Onboarding } from './screens/Onboarding';
 import { ProfileSetup } from './screens/ProfileSetup';
@@ -23,6 +23,7 @@ import { PlanUpdateNotification } from './components/PlanUpdateNotification';
 import { calculateMER, calculateDailyFoodAmount, calculateCaloriesForGoal } from './utils/calculations';
 
 export default function App() {
+  const appScrollRef = React.useRef<HTMLDivElement>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [previousScreen, setPreviousScreen] = useState<Screen | null>(null);
   const [showAddCustomFood, setShowAddCustomFood] = useState(false);
@@ -378,6 +379,13 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   const selectedFood = foods.find((f) => f.id === selectedFoodId);
 
+  // Auto scroll to top when currentScreen changes
+  React.useEffect(() => {
+    if (appScrollRef.current) {
+      appScrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [currentScreen]);
+
   const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => {
     const screenMap: Record<typeof page, Screen> = {
       dashboard: 'dashboard',
@@ -444,7 +452,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   return (
     <ThemeProvider theme={activeTheme}>
-      <div className="fixed inset-0 bg-gray-100 overflow-y-auto">
+      <div ref={appScrollRef} className="fixed inset-0 bg-gray-100 overflow-y-auto">
         <div className="max-w-[390px] mx-auto bg-white min-h-screen shadow-xl relative">
           {currentScreen === 'splash' && (
             <SplashScreen onStart={() => setCurrentScreen('onboarding')} />
