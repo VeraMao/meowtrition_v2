@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Send, Sparkles } from 'lucide-react';
+import { RotateCw, Send, Sparkles } from 'lucide-react';
 import { CatProfile, FeedingPlan, FoodItem } from '../types';
 import { BottomNav } from '../components/BottomNav';
 import { calculateDailyFoodAmount } from '../utils/calculations';
@@ -732,8 +732,8 @@ export function FeedingCoach({
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
-          <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80">
-            <ChevronLeft className="w-5 h-5" />
+          <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80" title="Start over the conversation">
+            <RotateCw className="w-5 h-5" />
             <span>Start over</span>
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
