@@ -732,18 +732,24 @@ export function FeedingCoach({
               {message.actions && message.actions.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {message.actions.map((action) => (
-                    <button
-                      key={action.id}
-                      onClick={action.action}
-                      className={`text-xs px-3 py-2 rounded-lg transition-all active:scale-95 ${
-                        message.sender === 'ai'
-                          ? 'text-foreground hover:bg-primary/90'
-                          : 'bg-white/20 text-foreground hover:bg-white/30'
-                      }`}
-                      style={message.sender === 'ai' ? { backgroundColor: 'rgba(244, 205, 165, 0.75)' } : undefined}
-                    >
-                      {action.label}
-                    </button>
+                    message.sender === 'ai' ? (
+                      <div
+                        key={action.id}
+                        onClick={action.action}
+                        className="text-xs px-3 py-2 rounded-lg transition-all active:scale-95 cursor-pointer text-foreground"
+                        style={{ backgroundColor: 'rgba(244, 205, 165, 0.75)' }}
+                      >
+                        {action.label}
+                      </div>
+                    ) : (
+                      <button
+                        key={action.id}
+                        onClick={action.action}
+                        className="text-xs px-3 py-2 rounded-lg transition-all active:scale-95 bg-white/20 text-foreground hover:bg-white/30"
+                      >
+                        {action.label}
+                      </button>
+                    )
                   ))}
                 </div>
               )}
