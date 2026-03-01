@@ -737,9 +737,10 @@ export function FeedingCoach({
                       onClick={action.action}
                       className={`text-xs px-3 py-2 rounded-lg transition-all active:scale-95 ${
                         message.sender === 'ai'
-                          ? 'bg-primary text-foreground hover:bg-primary/90'
+                          ? 'text-foreground hover:bg-primary/90'
                           : 'bg-white/20 text-foreground hover:bg-white/30'
                       }`}
+                      style={message.sender === 'ai' ? { backgroundColor: 'rgba(244, 205, 165, 0.75)' } : undefined}
                     >
                       {action.label}
                     </button>
