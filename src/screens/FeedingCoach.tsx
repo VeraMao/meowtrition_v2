@@ -705,7 +705,7 @@ export function FeedingCoach({
               message.sender === 'ai'
                 ? 'bg-muted text-foreground rounded-bl-none'
                 : 'bg-primary text-foreground rounded-br-none'
-            }`}>
+            }`} style={message.sender === 'ai' ? { backgroundColor: 'rgba(232, 216, 200, 0.34)' } : undefined}>
               {message.isAnalyzing ? (
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
