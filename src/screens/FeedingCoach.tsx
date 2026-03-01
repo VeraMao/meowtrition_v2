@@ -628,10 +628,10 @@ export function FeedingCoach({
       let guidance = '';
       switch (risk) {
         case 'obesity':
-          guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely\n\nInterested in suitable foods for weight control?`;
+          guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely`;
           break;
         case 'urinary':
-          guidance = `Increase water intake (promote wet food)\nMaintain proper mineral balance\nRegular monitoring is key\n\nI can recommend foods for urinary health.`;
+          guidance = `Increase water intake (promote wet food)\nMaintain proper mineral balance\nRegular monitoring is key`;
           break;
         case 'diabetes':
           guidance = `Maintain healthy weight\nKeep consistent feeding schedule\nMonitor for early signs\n\nLow-carb, high-protein diets can help.`;
@@ -644,10 +644,33 @@ export function FeedingCoach({
         content: guidance,
         timestamp: new Date(),
         actions: risk === 'obesity' || risk === 'urinary' ? [
-          { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) }
-        ] : [],
+          { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) },
+          { id: 'no-thanks', label: 'No, thanks', action: () => handleHealthRiskNoThanks() }
+        ] : [
+          { id: 'understand', label: 'I understand', action: () => showContinueHelping() }
+        ],
       };
       setMessages(prev => [...prev, guidanceMsg]);
+    }, 600);
+  };
+
+  const handleHealthRiskNoThanks = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'No, thanks',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const replyMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `Great! I'll monitor ${catProfile.name}'s health. Feel free to come back anytime if you need advice.`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, replyMsg]);
 
       setTimeout(() => showContinueHelping(), 600);
     }, 600);
