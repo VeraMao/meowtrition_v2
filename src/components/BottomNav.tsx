@@ -10,8 +10,8 @@ export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
   const navItems = [
     { id: 'dashboard' as const, icon: Home, label: 'Home' },
     { id: 'library' as const, icon: BookOpen, label: 'Library' },
-    { id: 'feeding-coach' as const, icon: Wand2, label: 'Coach' },
     { id: 'feeding-log' as const, icon: FileText, label: 'Log' },
+    { id: 'feeding-coach' as const, icon: Wand2, label: 'Coach' },
     { id: 'profile' as const, icon: User, label: 'Profile' },
   ];
 

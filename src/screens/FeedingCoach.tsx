@@ -629,6 +629,58 @@ export function FeedingCoach({
     setInputValue('');
   };
 
+  const renderMessageContent = (content: string) => {
+    const lines = content.split('\n');
+    const elements = [];
+    let currentParagraph = [];
+
+    lines.forEach((line, index) => {
+      if (line.trim().startsWith('•')) {
+        // Flush current paragraph if it exists
+        if (currentParagraph.length > 0) {
+          elements.push(
+            <p key={`para-${index}`} className="mb-2">
+              {currentParagraph.join(' ')}
+            </p>
+          );
+          currentParagraph = [];
+        }
+
+        // Add bullet point as a div
+        elements.push(
+          <div key={`bullet-${index}`} className="flex gap-2 mb-1">
+            <span className="text-primary flex-shrink-0">•</span>
+            <span className="flex-1">{line.trim().substring(1).trim()}</span>
+          </div>
+        );
+      } else if (line.trim() === '') {
+        // Empty line - treat as paragraph break
+        if (currentParagraph.length > 0) {
+          elements.push(
+            <p key={`para-${index}`} className="mb-2">
+              {currentParagraph.join(' ')}
+            </p>
+          );
+          currentParagraph = [];
+        }
+      } else {
+        // Regular text line
+        currentParagraph.push(line.trim());
+      }
+    });
+
+    // Flush remaining paragraph
+    if (currentParagraph.length > 0) {
+      elements.push(
+        <p key={`para-${lines.length}`} className="mb-2">
+          {currentParagraph.join(' ')}
+        </p>
+      );
+    }
+
+    return elements.length > 0 ? elements : <p>{content}</p>;
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -664,7 +716,9 @@ export function FeedingCoach({
                   <p className="text-sm">{message.content}</p>
                 </div>
               ) : (
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <div className="text-sm space-y-0">
+                  {renderMessageContent(message.content)}
+                </div>
               )}
 
               {/* Action Buttons */}
