@@ -84,7 +84,7 @@ export function FeedingCoach({
       content: `Hi ${catProfile.name}'s parent! 👋\nHow can I help you today?`,
       timestamp: new Date(),
       actions: [
-        { id: 'adjust', label: 'Adjust feeding plan', action: () => handleSelectIntent('feeding-adjustment') },
+        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'check-in', label: 'Weekly check-in', action: () => handleSelectIntent('weekly-check-in') },
         { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
         { id: 'health', label: 'Health risk overview', action: () => handleSelectIntent('health-overview') },
@@ -99,6 +99,64 @@ export function FeedingCoach({
     setInputValue('');
     setConversationState('entry');
     setTimeout(() => startConversation(), 100);
+  };
+
+  const generateFeedingPlanAnalysis = (): string => {
+    const food = selectedFood;
+    if (!food) {
+      return `Based on ${catProfile.name}'s profile:\n• Age: ${catProfile.age}y\n• Current weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nI recommend a personalized plan adjustment. Please select a food first.`;
+    }
+
+    const protein = food.protein || 0;
+    const carbs = food.carbohydrate || 0;
+    const fat = food.fat || 0;
+    const calories = food.caloriesPerHundredGrams;
+
+    // Calculate protein-to-calorie ratio
+    const proteinRatio = protein > 0 ? ((protein * 4) / calories * 100).toFixed(1) : 'N/A';
+    const carbRatio = carbs > 0 ? ((carbs * 4) / calories * 100).toFixed(1) : 'N/A';
+    const fatRatio = fat > 0 ? ((fat * 9) / calories * 100).toFixed(1) : 'N/A';
+
+    let assessment = '';
+    let recommendation = '';
+
+    // Assess based on macronutrient balance
+    if (protein >= 30) {
+      assessment += '• High-protein formula (excellent for lean muscle maintenance)\n';
+    } else if (protein >= 25) {
+      assessment += '• Good protein content (supports muscle health)\n';
+    } else {
+      assessment += '• Moderate protein content\n';
+    }
+
+    if (carbs <= 15) {
+      assessment += '• Low carbohydrate level (appropriate for obligate carnivores)\n';
+    } else if (carbs <= 30) {
+      assessment += '• Moderate carbohydrate level\n';
+    } else {
+      assessment += '• Higher carbohydrate level (monitor for dietary changes)\n';
+    }
+
+    assessment += `• Calorie density: ${calories} kcal/100g\n`;
+
+    // Generate recommendation based on cat's goal
+    if (catProfile.goal === 'weight-loss') {
+      if (calories < 350) {
+        recommendation = 'This food is suitable for your weight loss goal. Recommend: Keep current portions.';
+      } else {
+        recommendation = 'Recommend: Reduce portion size by 10-15% to support sustainable weight loss.';
+      }
+    } else if (catProfile.goal === 'weight-gain') {
+      if (calories > 380) {
+        recommendation = 'This high-calorie food supports weight gain well. Recommend: Keep current plan.';
+      } else {
+        recommendation = 'Recommend: Increase portion size by 10-15% or switch to a higher-calorie option.';
+      }
+    } else {
+      recommendation = 'This food supports balanced maintenance. Recommend: Keep current plan.';
+    }
+
+    return `Analysis of ${food.name}:\n${assessment}\n${recommendation}`;
   };
 
   const handleSelectIntent = (intent: string) => {
@@ -138,7 +196,7 @@ export function FeedingCoach({
 
   const getIntentLabel = (intent: string): string => {
     const labels: Record<string, string> = {
-      'feeding-adjustment': 'Adjust feeding plan',
+      'feeding-adjustment': 'Feeding Plan Consulting',
       'weekly-check-in': 'Weekly check-in',
       'food-recommendation': 'Food recommendation',
       'health-overview': 'Health risk overview',
@@ -162,10 +220,12 @@ export function FeedingCoach({
       // Remove analyzing message and add analysis
       setMessages(prev => prev.filter(m => !m.isAnalyzing));
 
+      // Generate analysis based on current food nutrition and cat profile
+      const analysisContent = generateFeedingPlanAnalysis();
       const analysis: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `Based on the last 2 weeks:\n• Weight is stable\n• Current goal: weight loss\n• Body score: 6/9\n\nI recommend reducing intake by 5%.`,
+        content: analysisContent,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, analysis]);
@@ -642,7 +702,7 @@ export function FeedingCoach({
       actions: [
         { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
         { id: 'health', label: 'Health insights', action: () => handleSelectIntent('health-overview') },
-        { id: 'adjust', label: 'Adjust plan', action: () => handleSelectIntent('feeding-adjustment') },
+        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'no', label: 'No, thanks', action: () => handleEndConversation() },
       ],
     };
