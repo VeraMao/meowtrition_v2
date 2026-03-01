@@ -44,6 +44,7 @@ interface FeedingCoachProps {
   catProfile: CatProfile;
   currentFeedingPlan: FeedingPlan;
   selectedFood: FoodItem;
+  foods: FoodItem[];
   onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   onApplyPlanAdjustment?: (newCalories: number) => void;
   onViewFoodDetail?: (foodId: string) => void;
@@ -53,6 +54,7 @@ export function FeedingCoach({
   catProfile,
   currentFeedingPlan,
   selectedFood,
+  foods,
   onNavigate,
   onApplyPlanAdjustment,
   onViewFoodDetail,
@@ -414,34 +416,60 @@ export function FeedingCoach({
   };
 
   const generateFoodCards = (category: RecommendationCategory): FoodCard[] => {
-    const cards: Record<RecommendationCategory, FoodCard[]> = {
-      'sensitive-stomach': [
-        { foodName: 'Hill\'s Sensitive Stomach', foodId: 'hills-sensitive', reasons: ['Lower fat percentage', 'Highly digestible protein', 'Positive community reviews for vomiting reduction'] },
-        { foodName: 'Royal Canin Digestive Care', foodId: 'rc-digestive', reasons: ['Specialized for GI sensitivity', 'Moderate protein', 'Easy to digest formula'] },
-        { foodName: 'Purina Pro Plan Sensitive', foodId: 'purina-sensitive', reasons: ['Limited ingredients', 'Novel protein sources', 'High digestibility rating'] },
-      ],
-      'weight-control': [
-        { foodName: 'Royal Canin Weight Control', foodId: 'rc-weight', reasons: ['Lower calorie density', 'High fiber for satiety', 'Supports weight management'] },
-        { foodName: 'Hill\'s Science Diet Weight Management', foodId: 'hills-weight', reasons: ['Calorie-controlled formula', 'Increased fiber', 'Clinical study backed'] },
-        { foodName: 'Purina Pro Plan Weight Management', foodId: 'purina-weight', reasons: ['Reduced calories per serving', 'High protein retention', 'Community approved'] },
-      ],
-      'urinary-health': [
-        { foodName: 'Hill\'s Science Diet Urinary Care', foodId: 'hills-urinary', reasons: ['Magnesium controlled', 'FLUTD prevention formula', 'Veterinarian recommended'] },
-        { foodName: 'Royal Canin Urinary SO', foodId: 'rc-urinary', reasons: ['Prevents crystal formation', 'Balanced minerals', 'Clinical effectiveness'] },
-        { foodName: 'Purina Pro Plan Urinary Tract Health', foodId: 'purina-urinary', reasons: ['Mineral balance', 'Promotes healthy urinary pH', 'Prevention-focused'] },
-      ],
-      'high-protein': [
-        { foodName: 'Taste of the Wild High Prairie', foodId: 'totw-prairie', reasons: ['35%+ protein', 'Grain-free with real meat', 'Natural ingredients'] },
-        { foodName: 'Orijen Original', foodId: 'orijen-original', reasons: ['80% fresh meat ingredients', 'High biological value', 'Premium protein sources'] },
-        { foodName: 'Acana Grasslands', foodId: 'acana-grasslands', reasons: ['Meat-first formula', 'High protein content', 'Limited carbohydrates'] },
-      ],
-      'exploring': [
-        { foodName: 'Hill\'s Science Diet Adult', foodId: 'food-2', reasons: ['Complete and balanced nutrition', 'Veterinarian recommended', 'Supports overall cat health'] },
-        { foodName: 'Natural Balance Limited Ingredient', foodId: 'nb-limited', reasons: ['Hypoallergenic potential', 'Quality ingredients', 'Good digestibility'] },
-        { foodName: 'IAMS Proactive Health', foodId: 'iams-proactive', reasons: ['Balanced formula', 'Widely available', 'Good value'] },
-      ],
+    const categoryMapping: Record<RecommendationCategory, string[]> = {
+      'sensitive-stomach': ['food-5'], // Blue Buffalo Wilderness - grain-free, good for sensitive stomach
+      'weight-control': ['food-1', 'food-4', 'food-2'], // Royal Canin (weight-loss), Fancy Feast (low-cal), Hill's
+      'urinary-health': ['food-1', 'food-3', 'food-2'], // High-quality foods that support urinary health
+      'high-protein': ['food-3', 'food-5', 'food-2'], // Purina (40g), Blue Buffalo (40g), Hill's (32g)
+      'exploring': ['food-1', 'food-2', 'food-4'], // Royal Canin, Hill's, Fancy Feast
     };
-    return cards[category] || [];
+
+    const foodIds = categoryMapping[category] || [];
+    const cards = foodIds
+      .map(foodId => {
+        const food = foods.find(f => f.id === foodId);
+        if (!food) return null;
+
+        const reasons = getRecommendationReasons(food, category);
+        return {
+          foodName: `${food.name}${food.brand ? ` (${food.brand})` : ''}`,
+          foodId: food.id,
+          reasons,
+        };
+      })
+      .filter((card): card is FoodCard => card !== null);
+
+    return cards;
+  };
+
+  const getRecommendationReasons = (food: FoodItem, category: RecommendationCategory): string[] => {
+    const reasons: Record<RecommendationCategory, Record<string, string[]>> = {
+      'sensitive-stomach': {
+        'food-5': ['Grain-free formula', 'Helps with sensitive stomach issues', 'High protein for good digestion'],
+      },
+      'weight-control': {
+        'food-1': ['Recommended for weight-loss', 'Controlled calorie density', 'High fiber for satiety'],
+        'food-4': ['Low-calorie option', 'Wet food promotes hydration', 'Helps with portion control'],
+        'food-2': ['High protein maintains muscle', 'Balanced formula for maintenance', 'Veterinarian recommended'],
+      },
+      'urinary-health': {
+        'food-1': ['Balanced minerals for urinary health', 'Recommended for maintenance', 'Quality nutrition support'],
+        'food-3': ['High protein for overall health', 'Quality ingredients', 'Good mineral balance'],
+        'food-2': ['Balanced formula supports health', 'Veterinarian recommended', 'Complete nutrition'],
+      },
+      'high-protein': {
+        'food-3': ['40g protein per 100g', 'High-protein formula', 'Supports muscle development'],
+        'food-5': ['40g protein per 100g', 'Grain-free with quality meat', 'High biological value'],
+        'food-2': ['32g protein per 100g', 'High-protein content', 'Veterinarian recommended'],
+      },
+      'exploring': {
+        'food-1': ['Complete and balanced nutrition', 'Good for indoor cats', 'Positive community reviews'],
+        'food-2': ['Complete and balanced nutrition', 'Veterinarian recommended', 'Supports overall health'],
+        'food-4': ['Quality ingredients', 'Popular choice', 'Easy to incorporate into diet'],
+      },
+    };
+
+    return reasons[category][food.id] || ['Quality food choice', 'Supports cat health'];
   };
 
   const handleViewFood = (foodId: string) => {

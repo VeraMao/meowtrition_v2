@@ -865,6 +865,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           catProfile={catProfile}
           currentFeedingPlan={feedingPlan}
           selectedFood={selectedFood}
+          foods={foods}
           onNavigate={handleNavigate}
           onApplyPlanAdjustment={handleApplyFeedingAdjustment}
           onViewFoodDetail={handleViewFoodDetail}
