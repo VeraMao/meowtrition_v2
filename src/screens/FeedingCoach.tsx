@@ -704,12 +704,15 @@ export function FeedingCoach({
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-4">
         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
-            <div className={`max-w-xs rounded-2xl px-4 py-3 ${
+          <div key={message.id} className={`flex ${message.sender === 'ai' ? 'justify-start' : 'justify-end'} px-2`}>
+            <div className={`rounded-2xl px-4 py-3 ${
               message.sender === 'ai'
                 ? 'bg-muted text-foreground rounded-bl-none'
                 : 'bg-primary text-foreground rounded-br-none'
-            }`} style={message.sender === 'ai' ? { backgroundColor: 'rgba(232, 216, 200, 0.34)' } : undefined}>
+            }`} style={{
+              ...(message.sender === 'ai' ? { backgroundColor: 'rgba(232, 216, 200, 0.34)' } : {}),
+              maxWidth: 'calc(100% - 16px)',
+            }}>
               {message.isAnalyzing ? (
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
