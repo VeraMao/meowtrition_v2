@@ -102,61 +102,91 @@ export function FeedingCoach({
   };
 
   const generateFeedingPlanAnalysis = (): string => {
-    const food = selectedFood;
-    if (!food) {
-      return `Based on ${catProfile.name}'s profile:\n• Age: ${catProfile.age}y\n• Current weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nI recommend a personalized plan adjustment. Please select a food first.`;
+    // Get foods from current feeding plan
+    let planFoods: FoodItem[] = [];
+    let foodDescriptions = '';
+
+    if (currentFeedingPlan.isMixed) {
+      // Mixed plan with multiple foods
+      const allPortions = [...(currentFeedingPlan.amPortions || []), ...(currentFeedingPlan.pmPortions || [])];
+      const uniqueFoodIds = Array.from(new Set(allPortions.map(p => p.foodId)));
+      planFoods = uniqueFoodIds
+        .map(id => foods.find(f => f.id === id))
+        .filter((f): f is FoodItem => f !== undefined);
+
+      foodDescriptions = `You're currently using a mixed plan with ${planFoods.length} foods`;
+    } else if (currentFeedingPlan.foodId) {
+      // Single food plan
+      const food = foods.find(f => f.id === currentFeedingPlan.foodId);
+      if (food) {
+        planFoods = [food];
+        foodDescriptions = `You're using ${food.name}`;
+      }
     }
 
-    const protein = food.protein || 0;
-    const carbs = food.carbohydrate || 0;
-    const fat = food.fat || 0;
-    const calories = food.caloriesPerHundredGrams;
+    if (planFoods.length === 0) {
+      return `Based on ${catProfile.name}'s profile:\n• Age: ${catProfile.age}y\n• Current weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nI recommend setting up a feeding plan first with specific foods.`;
+    }
 
-    // Calculate protein-to-calorie ratio
-    const proteinRatio = protein > 0 ? ((protein * 4) / calories * 100).toFixed(1) : 'N/A';
-    const carbRatio = carbs > 0 ? ((carbs * 4) / calories * 100).toFixed(1) : 'N/A';
-    const fatRatio = fat > 0 ? ((fat * 9) / calories * 100).toFixed(1) : 'N/A';
+    // Analyze overall nutrition
+    let totalProtein = 0;
+    let totalFat = 0;
+    let totalCarbs = 0;
+    let avgCalories = 0;
+
+    planFoods.forEach(food => {
+      totalProtein += food.protein || 0;
+      totalFat += food.fat || 0;
+      totalCarbs += food.carbohydrate || 0;
+      avgCalories += food.caloriesPerHundredGrams;
+    });
+
+    const avgProtein = (totalProtein / planFoods.length).toFixed(1);
+    const avgCarbs = (totalCarbs / planFoods.length).toFixed(1);
+    const avgFat = (totalFat / planFoods.length).toFixed(1);
+    avgCalories = avgCalories / planFoods.length;
 
     let assessment = '';
     let recommendation = '';
 
     // Assess based on macronutrient balance
-    if (protein >= 30) {
-      assessment += '• High-protein formula (excellent for lean muscle maintenance)\n';
-    } else if (protein >= 25) {
+    if (parseFloat(avgProtein) >= 30) {
+      assessment += '• High-protein average (excellent for lean muscle maintenance)\n';
+    } else if (parseFloat(avgProtein) >= 25) {
       assessment += '• Good protein content (supports muscle health)\n';
     } else {
       assessment += '• Moderate protein content\n';
     }
 
-    if (carbs <= 15) {
+    if (parseFloat(avgCarbs) <= 15) {
       assessment += '• Low carbohydrate level (appropriate for obligate carnivores)\n';
-    } else if (carbs <= 30) {
+    } else if (parseFloat(avgCarbs) <= 30) {
       assessment += '• Moderate carbohydrate level\n';
     } else {
       assessment += '• Higher carbohydrate level (monitor for dietary changes)\n';
     }
 
-    assessment += `• Calorie density: ${calories} kcal/100g\n`;
+    assessment += `• Average calorie density: ${Math.round(avgCalories)} kcal/100g\n`;
+    assessment += `• Daily intake: ${currentFeedingPlan.totalCaloriesPerDay} kcal, ${currentFeedingPlan.totalGramsPerDay}g\n`;
 
     // Generate recommendation based on cat's goal
     if (catProfile.goal === 'weight-loss') {
-      if (calories < 350) {
-        recommendation = 'This food is suitable for your weight loss goal. Recommend: Keep current portions.';
+      if (avgCalories < 350) {
+        recommendation = 'Your plan supports weight loss well. Recommend: Keep current portions.';
       } else {
         recommendation = 'Recommend: Reduce portion size by 10-15% to support sustainable weight loss.';
       }
     } else if (catProfile.goal === 'weight-gain') {
-      if (calories > 380) {
-        recommendation = 'This high-calorie food supports weight gain well. Recommend: Keep current plan.';
+      if (avgCalories > 380) {
+        recommendation = 'Your plan supports weight gain well. Recommend: Keep current portions.';
       } else {
-        recommendation = 'Recommend: Increase portion size by 10-15% or switch to a higher-calorie option.';
+        recommendation = 'Recommend: Increase portion size by 10-15% or add higher-calorie foods.';
       }
     } else {
-      recommendation = 'This food supports balanced maintenance. Recommend: Keep current plan.';
+      recommendation = 'Your plan supports balanced maintenance. Recommend: Keep current plan.';
     }
 
-    return `Analysis of ${food.name}:\n${assessment}\n${recommendation}`;
+    return `${foodDescriptions}:\n${assessment}\n${recommendation}`;
   };
 
   const handleSelectIntent = (intent: string) => {
