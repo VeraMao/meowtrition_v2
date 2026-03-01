@@ -578,10 +578,24 @@ export function FeedingCoach({
         });
 
         setTimeout(() => {
-          showContinueHelping();
+          showRecommendMoreOrDone();
         }, 300 + (foodCards.length * 300) + 600);
       }, 1200);
     }, 600);
+  };
+
+  const showRecommendMoreOrDone = () => {
+    const msg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: 'Would you like more food recommendations?',
+      timestamp: new Date(),
+      actions: [
+        { id: 'more-food', label: 'Recommend more foods', action: () => handleSelectIntent('food-recommendation') },
+        { id: 'done', label: 'No, thanks', action: () => handleEndConversation() },
+      ],
+    };
+    setMessages(prev => [...prev, msg]);
   };
 
   const showContinueHelping = () => {
@@ -690,8 +704,9 @@ export function FeedingCoach({
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
-          <button onClick={() => onNavigate('dashboard')} className="p-2 -ml-2 active:scale-95">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
+          <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80">
+            <ChevronLeft className="w-5 h-5" />
+            <span>Start over</span>
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
