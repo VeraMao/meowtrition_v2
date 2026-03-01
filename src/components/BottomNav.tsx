@@ -1,9 +1,9 @@
 import React from 'react';
-import { Home, FileText, BookOpen, User } from 'lucide-react';
+import { Home, FileText, BookOpen, User, Sparkles } from 'lucide-react';
 
 interface BottomNavProps {
-  currentPage: 'dashboard' | 'library' | 'feeding-log' | 'profile';
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile') => void;
+  currentPage: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights';
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
 }
 
 export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
@@ -11,6 +11,7 @@ export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
     { id: 'dashboard' as const, icon: Home, label: 'Home' },
     { id: 'feeding-log' as const, icon: FileText, label: 'Log' },
     { id: 'library' as const, icon: BookOpen, label: 'Library' },
+    { id: 'ai-insights' as const, icon: Sparkles, label: 'AI' },
     { id: 'profile' as const, icon: User, label: 'Profile' },
   ];
 

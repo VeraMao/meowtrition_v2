@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Star, ThumbsUp, Share2, AlertCircle, CheckCircle } from 'lucide-react';
+import { ChevronLeft, Star, ThumbsUp, Share2, AlertCircle, CheckCircle, Sparkles, Upload } from 'lucide-react';
 import { FoodItem, FoodReview, CatProfile } from '../types';
 import { BottomNav } from '../components/BottomNav';
 
@@ -8,7 +8,7 @@ interface FoodDetailProps {
   onBack: () => void;
   onAddToMyPlan: (foodId: string) => void;
   onShareReview: (review: Omit<FoodReview, 'id' | 'timestamp'>) => void;
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile') => void;
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
   currentProfile?: CatProfile;
 }
 
@@ -25,6 +25,8 @@ export function FoodDetail({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewFilter, setReviewFilter] = useState<'newest' | 'top' | 'helpful'>('newest');
   const [addedToPlan, setAddedToplan] = useState(false);
+  const [showAINutritionInsights, setShowAINutritionInsights] = useState(false);
+  const [isLoadingNutritionAnalysis, setIsLoadingNutritionAnalysis] = useState(false);
 
   const sortedReviews = [...(food.reviews || [])].sort((a, b) => {
     if (reviewFilter === 'newest') {
@@ -51,6 +53,14 @@ export function FoodDetail({
     setReviewText('');
     setReviewRating(5);
     setShowReviewModal(false);
+  };
+
+  const handleAnalyzeNutrition = async () => {
+    setIsLoadingNutritionAnalysis(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setShowAINutritionInsights(true);
+    setIsLoadingNutritionAnalysis(false);
   };
 
   const renderStars = (rating: number, size: 'sm' | 'md' = 'sm') => {
@@ -220,6 +230,90 @@ export function FoodDetail({
               </div>
             )}
           </div>
+        </div>
+
+        {/* AI Nutrition Insights */}
+        <div className="bg-card rounded-2xl p-5 border border-border" style={{
+          background: 'linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(168,85,247,0.04) 100%)',
+          boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)',
+        }}>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100/80 text-purple-700 text-xs font-semibold">
+                  <Sparkles className="w-3 h-3" />
+                  AI
+                </span>
+              </div>
+              <h3 className="text-foreground font-semibold">AI Nutrition Insights</h3>
+            </div>
+          </div>
+
+          {!showAINutritionInsights ? (
+            <div className="space-y-3">
+              <p className="text-muted-foreground text-sm mb-4">
+                Get an AI analysis of this food's nutritional profile and potential health implications.
+              </p>
+
+              <div className="space-y-2">
+                <button
+                  onClick={handleAnalyzeNutrition}
+                  disabled={isLoadingNutritionAnalysis}
+                  className="w-full py-3 bg-purple-500 text-white rounded-xl active:scale-[0.98] transition-all text-sm font-medium disabled:opacity-70 hover:bg-purple-600"
+                >
+                  {isLoadingNutritionAnalysis ? 'Analyzing...' : 'Analyze this Food'}
+                </button>
+
+                <button className="w-full py-3 border border-purple-200 text-purple-600 rounded-xl active:scale-[0.98] transition-all text-sm font-medium flex items-center justify-center gap-2 hover:bg-purple-50">
+                  <Upload className="w-4 h-4" />
+                  Upload package photo
+                </button>
+              </div>
+
+              <p className="text-muted-foreground text-xs mt-4">
+                💡 Tip: Upload a photo of the nutrition label for instant analysis.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-white/50 border border-purple-200 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h4 className="text-foreground font-semibold text-sm">Protein-to-Calorie Ratio</h4>
+                    <p className="text-muted-foreground text-xs mt-1">78g per 1000 kcal</p>
+                    <p className="text-muted-foreground text-xs mt-2">Excellent protein content for muscle maintenance.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/50 border border-orange-200 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h4 className="text-foreground font-semibold text-sm">Obesity Risk Score</h4>
+                    <p className="text-muted-foreground text-xs mt-1">Moderate</p>
+                    <p className="text-muted-foreground text-xs mt-2">Monitor portion sizes, especially for less active cats.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h4 className="text-foreground font-semibold text-sm">Carbohydrate Load</h4>
+                    <p className="text-muted-foreground text-xs mt-1">High</p>
+                    <p className="text-muted-foreground text-xs mt-2">Consider lower-carb options if your cat has sensitivity.</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowAINutritionInsights(false)}
+                className="w-full py-2 text-sm text-purple-600 font-medium active:scale-[0.98] transition-all"
+              >
+                Clear Analysis
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Community Insights */}
