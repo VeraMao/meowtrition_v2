@@ -104,7 +104,7 @@ export function FeedingCoach({
   const generateFeedingPlanAnalysis = (): string => {
     // Get foods from current feeding plan
     let planFoods: FoodItem[] = [];
-    let foodDescriptions = '';
+    let foodList = '';
 
     if (currentFeedingPlan.isMixed) {
       // Mixed plan with multiple foods
@@ -114,18 +114,18 @@ export function FeedingCoach({
         .map(id => foods.find(f => f.id === id))
         .filter((f): f is FoodItem => f !== undefined);
 
-      foodDescriptions = `You're currently using a mixed plan with ${planFoods.length} foods`;
+      foodList = planFoods.map(f => f.name).join(' + ');
     } else if (currentFeedingPlan.foodId) {
       // Single food plan
       const food = foods.find(f => f.id === currentFeedingPlan.foodId);
       if (food) {
         planFoods = [food];
-        foodDescriptions = `You're using ${food.name}`;
+        foodList = food.name;
       }
     }
 
     if (planFoods.length === 0) {
-      return `Based on ${catProfile.name}'s profile:\n• Age: ${catProfile.age}y\n• Current weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nI recommend setting up a feeding plan first with specific foods.`;
+      return `📊 Feeding Plan Analysis for ${catProfile.name}\n\nProfile:\n• Age: ${catProfile.age}y\n• Weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nNo food plan set. Please select a food to get personalized analysis.`;
     }
 
     // Analyze overall nutrition
@@ -133,6 +133,7 @@ export function FeedingCoach({
     let totalFat = 0;
     let totalCarbs = 0;
     let avgCalories = 0;
+    let isPrescription = planFoods.some(f => f.type === 'prescription');
 
     planFoods.forEach(food => {
       totalProtein += food.protein || 0;
@@ -146,47 +147,69 @@ export function FeedingCoach({
     const avgFat = (totalFat / planFoods.length).toFixed(1);
     avgCalories = avgCalories / planFoods.length;
 
+    // Build fancy assessment
     let assessment = '';
-    let recommendation = '';
 
-    // Assess based on macronutrient balance
+    // Header
+    assessment += `📊 Nutritional Analysis\n`;
+    assessment += `Food: ${foodList}\n\n`;
+
+    // Macronutrient breakdown
+    assessment += `💪 Macronutrient Profile:\n`;
+    assessment += `• Protein: ${avgProtein}g `;
     if (parseFloat(avgProtein) >= 30) {
-      assessment += '• High-protein average (excellent for lean muscle maintenance)\n';
+      assessment += '✓ Excellent (high-protein)\n';
     } else if (parseFloat(avgProtein) >= 25) {
-      assessment += '• Good protein content (supports muscle health)\n';
+      assessment += '✓ Good\n';
     } else {
-      assessment += '• Moderate protein content\n';
+      assessment += '• Moderate\n';
     }
 
+    assessment += `• Fat: ${avgFat}g • Carbs: ${avgCarbs}g\n`;
+    assessment += `• Calories: ${Math.round(avgCalories)} kcal/100g\n\n`;
+
+    // Special markers for prescription food
+    if (isPrescription) {
+      assessment += `⚕️ PRESCRIPTION FORMULA\n`;
+      assessment += `Clinically formulated for specific health conditions\n\n`;
+    }
+
+    // Health assessment
+    assessment += `🎯 Health Suitability:\n`;
     if (parseFloat(avgCarbs) <= 15) {
-      assessment += '• Low carbohydrate level (appropriate for obligate carnivores)\n';
+      assessment += `• Carbs: Low level (optimal)\n`;
     } else if (parseFloat(avgCarbs) <= 30) {
-      assessment += '• Moderate carbohydrate level\n';
+      assessment += `• Carbs: Moderate level\n`;
     } else {
-      assessment += '• Higher carbohydrate level (monitor for dietary changes)\n';
+      assessment += `• Carbs: Higher level (monitor)\n`;
     }
 
-    assessment += `• Average calorie density: ${Math.round(avgCalories)} kcal/100g\n`;
-    assessment += `• Daily intake: ${currentFeedingPlan.totalCaloriesPerDay} kcal, ${currentFeedingPlan.totalGramsPerDay}g\n`;
+    // Daily intake
+    assessment += `\n📋 Current Feeding Plan:\n`;
+    assessment += `• Daily calories: ${currentFeedingPlan.totalCaloriesPerDay} kcal\n`;
+    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n\n`;
 
-    // Generate recommendation based on cat's goal
+    // Personalized recommendation
+    let recommendation = '';
     if (catProfile.goal === 'weight-loss') {
       if (avgCalories < 350) {
-        recommendation = 'Your plan supports weight loss well. Recommend: Keep current portions.';
+        recommendation = '💚 Your plan is ideal for weight loss goals. Keep current portions.';
       } else {
-        recommendation = 'Recommend: Reduce portion size by 10-15% to support sustainable weight loss.';
+        recommendation = '💡 Consider reducing portions by 10-15% for better weight loss results.';
       }
     } else if (catProfile.goal === 'weight-gain') {
       if (avgCalories > 380) {
-        recommendation = 'Your plan supports weight gain well. Recommend: Keep current portions.';
+        recommendation = '💚 Your plan supports weight gain well. Continue current portions.';
       } else {
-        recommendation = 'Recommend: Increase portion size by 10-15% or add higher-calorie foods.';
+        recommendation = '💡 Consider increasing portions by 10-15% to support weight gain.';
       }
     } else {
-      recommendation = 'Your plan supports balanced maintenance. Recommend: Keep current plan.';
+      recommendation = '💚 Your plan supports balanced, healthy maintenance.';
     }
 
-    return `${foodDescriptions}:\n${assessment}\n${recommendation}`;
+    assessment += `✨ Recommendation:\n${recommendation}`;
+
+    return assessment;
   };
 
   const handleSelectIntent = (intent: string) => {
@@ -551,7 +574,7 @@ export function FeedingCoach({
     const categoryMapping: Record<RecommendationCategory, string[]> = {
       'sensitive-stomach': ['food-5'], // Blue Buffalo Wilderness - grain-free, good for sensitive stomach
       'weight-control': ['food-1', 'food-4', 'food-2'], // Royal Canin (weight-loss), Fancy Feast (low-cal), Hill's
-      'urinary-health': ['food-1', 'food-3', 'food-2'], // High-quality foods that support urinary health
+      'urinary-health': ['food-8', 'food-1', 'food-3'], // Hill's Prescription Diet c/d, Royal Canin, Purina
       'high-protein': ['food-3', 'food-5', 'food-2'], // Purina (40g), Blue Buffalo (40g), Hill's (32g)
       'exploring': ['food-1', 'food-2', 'food-4'], // Royal Canin, Hill's, Fancy Feast
     };
@@ -585,9 +608,9 @@ export function FeedingCoach({
         'food-2': ['High protein maintains muscle', 'Balanced formula for maintenance', 'Veterinarian recommended'],
       },
       'urinary-health': {
+        'food-8': ['⚕️ PRESCRIPTION FORMULA', 'Clinically tested - 89% reduction in urinary signs', 'Dissolves struvite stones in 27 days average', 'Controlled magnesium, calcium & phosphorus', 'Enriched with potassium citrate & Omega-3'],
         'food-1': ['Balanced minerals for urinary health', 'Recommended for maintenance', 'Quality nutrition support'],
         'food-3': ['High protein for overall health', 'Quality ingredients', 'Good mineral balance'],
-        'food-2': ['Balanced formula supports health', 'Veterinarian recommended', 'Complete nutrition'],
       },
       'high-protein': {
         'food-3': ['40g protein per 100g', 'High-protein formula', 'Supports muscle development'],
