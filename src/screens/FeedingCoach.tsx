@@ -628,7 +628,7 @@ export function FeedingCoach({
       const healthMsg: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `Based on ${catProfile.name}'s age (3y), weight (${catProfile.currentWeight}kg), and feeding pattern:\n\n• Obesity Risk: Moderate\n• Urinary Risk: Slightly Elevated\n• Diabetes Risk: Low`,
+        content: `Based on ${catProfile.name}'s profile, I noticed:\n\n• Urinary Risk: Slightly Elevated\n\nThis is important to monitor for cat health.`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, healthMsg]);
@@ -637,12 +637,10 @@ export function FeedingCoach({
         const actionMsg: ChatMessage = {
           id: `msg-${Date.now()}-2`,
           sender: 'ai',
-          content: 'Would you like to know more about any of these?',
+          content: 'Would you like to know more about reducing urinary risk?',
           timestamp: new Date(),
           actions: [
-            { id: 'obesity', label: 'Reduce obesity risk', action: () => handleHealthRiskAction('obesity') },
-            { id: 'urinary', label: 'How to reduce urinary risk', action: () => handleHealthRiskAction('urinary') },
-            { id: 'diabetes', label: 'Prevent diabetes', action: () => handleHealthRiskAction('diabetes') },
+            { id: 'urinary', label: 'Reduce urinary risk', action: () => handleHealthRiskAction('urinary') },
           ],
         };
         setMessages(prev => [...prev, actionMsg]);
