@@ -643,7 +643,7 @@ export function FeedingCoach({
         // Flush current paragraph if it exists
         if (currentParagraph.length > 0) {
           elements.push(
-            <p key={`para-${index}`} className="text-sm mb-2">
+            <p key={`para-${index}`} className="text-sm mb-auto">
               {currentParagraph.join(' ')}
             </p>
           );
@@ -661,7 +661,7 @@ export function FeedingCoach({
         // Empty line - treat as paragraph break
         if (currentParagraph.length > 0) {
           elements.push(
-            <p key={`para-${index}`} className="text-sm mb-2">
+            <p key={`para-${index}`} className="text-sm mb-auto">
               {currentParagraph.join(' ')}
             </p>
           );
@@ -676,7 +676,7 @@ export function FeedingCoach({
     // Flush remaining paragraph
     if (currentParagraph.length > 0) {
       elements.push(
-        <p key={`para-${lines.length}`} className="text-sm mb-2">
+        <p key={`para-${lines.length}`} className="text-sm mb-auto">
           {currentParagraph.join(' ')}
         </p>
       );
