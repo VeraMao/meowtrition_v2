@@ -375,7 +375,10 @@ export function FeedingCoach({
         { id: 'eating-more', label: 'Eating more', action: () => handleCheckInResponse('eating-more') },
         { id: 'eating-less', label: 'Eating less', action: () => handleCheckInResponse('eating-less') },
         { id: 'more-active', label: 'More active', action: () => handleCheckInResponse('more-active') },
+        { id: 'drinking-more', label: 'Drinking more water', action: () => handleCheckInResponse('drinking-more') },
+        { id: 'drinking-less', label: 'Drinking less water', action: () => handleCheckInResponse('drinking-less') },
         { id: 'no-change', label: 'No change', action: () => handleCheckInResponse('no-change') },
+        { id: 'other', label: 'Other concerns', action: () => handleCheckInOtherConcerns() },
       ],
     };
     setMessages(prev => [...prev, checkInMsg]);
@@ -402,6 +405,12 @@ export function FeedingCoach({
         case 'more-active':
           replyContent = `Great news! More activity is excellent for overall health. This might allow for slightly higher calorie intake to fuel the activity.`;
           break;
+        case 'drinking-more':
+          replyContent = `That's great! Increased water intake is excellent for kidney and urinary health. Keep encouraging ${catProfile.name} to stay hydrated.`;
+          break;
+        case 'drinking-less':
+          replyContent = `I see. Decreased water intake could be a concern. Try offering wet food or using a water fountain to encourage hydration. Monitor ${catProfile.name}'s health closely.`;
+          break;
         case 'no-change':
           replyContent = `Perfect! Stability is exactly what we want. ${catProfile.name}'s on a good track.`;
           break;
@@ -424,9 +433,35 @@ export function FeedingCoach({
       'eating-more': 'Eating more',
       'eating-less': 'Eating less',
       'more-active': 'More active',
+      'drinking-more': 'Drinking more water',
+      'drinking-less': 'Drinking less water',
       'no-change': 'No change',
+      'other': 'Other concerns',
     };
     return labels[response] || '';
+  };
+
+  const handleCheckInOtherConcerns = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'Other concerns',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const aiMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `I'd like to hear more! Please describe any other changes you've noticed with ${catProfile.name}'s health or behavior.`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiMsg]);
+
+      // Set conversation state to allow free-form input
+      setConversationState('follow-up');
+    }, 600);
   };
 
   const generateFoodRecommendationFlow = () => {
