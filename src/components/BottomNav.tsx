@@ -1,17 +1,17 @@
 import React from 'react';
-import { Home, FileText, BookOpen, User, Sparkles } from 'lucide-react';
+import { Home, FileText, BookOpen, User, Wand2 } from 'lucide-react';
 
 interface BottomNavProps {
-  currentPage: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights';
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
+  currentPage: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach';
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
 }
 
 export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
   const navItems = [
     { id: 'dashboard' as const, icon: Home, label: 'Home' },
-    { id: 'feeding-log' as const, icon: FileText, label: 'Log' },
     { id: 'library' as const, icon: BookOpen, label: 'Library' },
-    { id: 'ai-insights' as const, icon: Sparkles, label: 'AI' },
+    { id: 'feeding-coach' as const, icon: Wand2, label: 'Coach' },
+    { id: 'feeding-log' as const, icon: FileText, label: 'Log' },
     { id: 'profile' as const, icon: User, label: 'Profile' },
   ];
 

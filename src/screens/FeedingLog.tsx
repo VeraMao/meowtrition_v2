@@ -11,7 +11,7 @@ interface FeedingLogProps {
   feedingPlan: FeedingPlan;
   selectedFood: FoodItem;
   onAddLog: (log: Omit<FeedingLogType, 'id'>) => void;
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   userLibraryFoodIds?: string[];
   selectedFoodIds?: string[];
 }

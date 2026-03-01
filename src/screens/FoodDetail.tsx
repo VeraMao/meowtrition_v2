@@ -8,7 +8,7 @@ interface FoodDetailProps {
   onBack: () => void;
   onAddToMyPlan: (foodId: string) => void;
   onShareReview: (review: Omit<FoodReview, 'id' | 'timestamp'>) => void;
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   currentProfile?: CatProfile;
 }
 

@@ -14,8 +14,7 @@ import { ShareZone } from './screens/ShareZone';
 import { ManageCats } from './screens/ManageCats';
 import { ManageFoods } from './screens/ManageFoods';
 import { ThemeSelector } from './screens/ThemeSelector';
-import { AIInsights } from './screens/AIInsights';
-import { AIFeedingCoach } from './screens/AIFeedingCoach';
+import { FeedingCoach } from './screens/FeedingCoach';
 import { CatProfile, FoodItem, FeedingPlan as FeedingPlanType, FeedingLog as FeedingLogType, Screen, AppSettings, ThemeName, FoodReview, CommunityPost } from './types';
 import { mockFoods } from './data/mockFoods';
 import { mockCommunityPosts } from './data/mockCommunityPosts';
@@ -354,13 +353,13 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   const selectedFood = foods.find((f) => f.id === selectedFoodId);
 
-  const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => {
+  const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => {
     const screenMap: Record<typeof page, Screen> = {
       dashboard: 'dashboard',
       library: 'food-library',
       'feeding-log': 'feeding-log',
       profile: 'settings',
-      'ai-insights': 'ai-insights',
+      'feeding-coach': 'feeding-coach',
     };
     setCurrentScreen(screenMap[page]);
   };
@@ -657,7 +656,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           onNavigateToLog={() => setCurrentScreen('feeding-log')}
           onNavigateToSettings={() => setCurrentScreen('settings')}
           onNavigateToLibrary={() => setCurrentScreen('food-library')}
-          onNavigateToAIInsights={() => setCurrentScreen('ai-insights')}
+          onNavigateToFeedingCoach={() => setCurrentScreen('feeding-coach')}
           allProfiles={catProfiles}
           onSwitchProfile={handleSwitchProfile}
           defaultWeightUnit={appSettings.unitPreferences.weight}
@@ -831,20 +830,12 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
         />
       )}
 
-      {currentScreen === 'ai-insights' && catProfile && feedingPlan && (
-        <AIInsights
-          catProfile={catProfile}
-          onBack={() => setCurrentScreen('dashboard')}
-          onNavigate={handleNavigate}
-          onNavigateToFeedingCoach={() => setCurrentScreen('ai-feeding-coach')}
-        />
-      )}
-
-      {currentScreen === 'ai-feeding-coach' && catProfile && feedingPlan && (
-        <AIFeedingCoach
+      {currentScreen === 'feeding-coach' && catProfile && feedingPlan && (
+        <FeedingCoach
           catProfile={catProfile}
           currentFeedingPlan={feedingPlan}
-          onBack={() => setCurrentScreen('ai-insights')}
+          selectedFood={selectedFood}
+          onNavigate={handleNavigate}
         />
       )}
 

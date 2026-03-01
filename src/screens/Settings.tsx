@@ -8,7 +8,7 @@ import { convertWeight } from '../utils/calculations';
 interface SettingsProps {
   catProfile: CatProfile;
   selectedFood: FoodItem;
-  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'ai-insights') => void;
+  onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   onEditProfile: () => void;
   onEditFood: () => void;
   onManageCats: () => void;

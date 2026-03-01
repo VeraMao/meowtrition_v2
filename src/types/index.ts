@@ -180,5 +180,4 @@ export type Screen =
   | 'manage-cats'
   | 'manage-foods'
   | 'theme-selector'
-  | 'ai-insights'
-  | 'ai-feeding-coach';
+  | 'feeding-coach';
