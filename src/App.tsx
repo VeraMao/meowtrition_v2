@@ -389,6 +389,11 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
     setCurrentScreen(screenMap[page]);
   };
 
+  const handleViewFoodDetail = (foodId: string) => {
+    setSelectedFoodForDetail(foodId);
+    setCurrentScreen('food-detail');
+  };
+
   const handleFoodSelectFromLibrary = (foodId: string) => {
     setSelectedFoodForDetail(foodId);
     setCurrentScreen('food-detail');
@@ -862,6 +867,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           selectedFood={selectedFood}
           onNavigate={handleNavigate}
           onApplyPlanAdjustment={handleApplyFeedingAdjustment}
+          onViewFoodDetail={handleViewFoodDetail}
         />
       )}
 

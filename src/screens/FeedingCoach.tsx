@@ -46,6 +46,7 @@ interface FeedingCoachProps {
   selectedFood: FoodItem;
   onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   onApplyPlanAdjustment?: (newCalories: number) => void;
+  onViewFoodDetail?: (foodId: string) => void;
 }
 
 export function FeedingCoach({
@@ -54,6 +55,7 @@ export function FeedingCoach({
   selectedFood,
   onNavigate,
   onApplyPlanAdjustment,
+  onViewFoodDetail,
 }: FeedingCoachProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -434,7 +436,7 @@ export function FeedingCoach({
         { foodName: 'Acana Grasslands', foodId: 'acana-grasslands', reasons: ['Meat-first formula', 'High protein content', 'Limited carbohydrates'] },
       ],
       'exploring': [
-        { foodName: 'Wellness Core Grain Free', foodId: 'wellness-core', reasons: ['Balanced nutrition', 'Real meat first', 'No artificial additives'] },
+        { foodName: 'Hill\'s Science Diet Adult', foodId: 'food-2', reasons: ['Complete and balanced nutrition', 'Veterinarian recommended', 'Supports overall cat health'] },
         { foodName: 'Natural Balance Limited Ingredient', foodId: 'nb-limited', reasons: ['Hypoallergenic potential', 'Quality ingredients', 'Good digestibility'] },
         { foodName: 'IAMS Proactive Health', foodId: 'iams-proactive', reasons: ['Balanced formula', 'Widely available', 'Good value'] },
       ],
@@ -443,8 +445,10 @@ export function FeedingCoach({
   };
 
   const handleViewFood = (foodId: string) => {
-    // Navigate to food library
-    onNavigate('library');
+    // Navigate to food detail page
+    if (onViewFoodDetail) {
+      onViewFoodDetail(foodId);
+    }
   };
 
   const generateHealthOverviewFlow = () => {
