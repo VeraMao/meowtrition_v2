@@ -363,7 +363,7 @@ export function FoodDetail({
                   onClick={handleAnalyzeNutrition}
                   disabled={isLoadingNutritionAnalysis}
                   className="w-full py-3 rounded-xl active:scale-[0.98] transition-all text-sm font-medium disabled:opacity-70 text-black"
-                  style={{ background: 'rgba(244, 205, 165, 0.5)', border: '1px solid #e4d5d9' }}
+                  style={{ background: 'rgba(244, 205, 165, 0)', border: '1px solid #e4d5d9' }}
                 >
                   {isLoadingNutritionAnalysis ? 'Analyzing...' : 'Analyze This Food'}
                 </button>
