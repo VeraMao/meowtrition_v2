@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Send, Sparkles } from 'lucide-react';
 import { CatProfile, FeedingPlan, FoodItem } from '../types';
 import { BottomNav } from '../components/BottomNav';
+import { calculateDailyFoodAmount } from '../utils/calculations';
 
 interface ChatMessage {
   id: string;
@@ -9,6 +10,7 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
   actions?: ActionButton[];
+  isAnalyzing?: boolean;
 }
 
 interface ActionButton {
@@ -17,11 +19,33 @@ interface ActionButton {
   action: () => void;
 }
 
+type ConversationState =
+  | 'entry'
+  | 'feeding-adjustment'
+  | 'food-recommendation'
+  | 'health-overview'
+  | 'weekly-check-in'
+  | 'follow-up';
+
+type RecommendationCategory =
+  | 'sensitive-stomach'
+  | 'weight-control'
+  | 'urinary-health'
+  | 'high-protein'
+  | 'exploring';
+
+interface FoodCard {
+  foodName: string;
+  foodId?: string;
+  reasons: string[];
+}
+
 interface FeedingCoachProps {
   catProfile: CatProfile;
   currentFeedingPlan: FeedingPlan;
   selectedFood: FoodItem;
   onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
+  onApplyPlanAdjustment?: (newCalories: number) => void;
 }
 
 export function FeedingCoach({
@@ -29,148 +53,196 @@ export function FeedingCoach({
   currentFeedingPlan,
   selectedFood,
   onNavigate,
+  onApplyPlanAdjustment,
 }: FeedingCoachProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [conversationStage, setConversationStage] = useState<'initial' | 'analyzing' | 'suggestion' | 'adjustment'>('initial');
+  const [conversationState, setConversationState] = useState<ConversationState>('entry');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages update
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Initialize conversation on mount
+  // Initialize conversation
   useEffect(() => {
-    if (messages.length === 0) {
+    if (messages.length === 0 && conversationState === 'entry') {
       startConversation();
     }
   }, []);
 
   const startConversation = () => {
-    // Generate initial greeting
     const greeting: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'ai',
-      content: `Hi ${catProfile.name}'s parent! 👋\nI've reviewed your cat's recent feeding data. Here's what I noticed:`,
+      content: `Hi ${catProfile.name}'s parent! 👋\nHow can I help you today?`,
       timestamp: new Date(),
+      actions: [
+        { id: 'adjust', label: 'Adjust feeding plan', action: () => handleSelectIntent('feeding-adjustment') },
+        { id: 'check-in', label: 'Weekly check-in', action: () => handleSelectIntent('weekly-check-in') },
+        { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
+        { id: 'health', label: 'Health risk overview', action: () => handleSelectIntent('health-overview') },
+        { id: 'ask', label: 'Ask anything', action: () => handleSelectIntent('ask-anything') },
+      ],
     };
     setMessages([greeting]);
-    setConversationStage('analyzing');
-
-    // Generate analysis after short delay
-    setTimeout(() => {
-      generateAnalysis();
-    }, 800);
   };
 
-  const generateAnalysis = () => {
-    // Hardcoded logic based on simple conditions
-    const recentLogs: any[] = []; // In real app, would get from props
-    const weightTrend = 'stable'; // Simple logic: could be stable/increasing/decreasing
-    const activityLevel = catProfile.activityLevel || 'medium';
-    
-    let analysisText = '';
-    
-    // Simple decision logic
-    if (weightTrend === 'stable') {
-      analysisText = `• Weight has remained stable\n• Daily intake is on target at ${currentFeedingPlan.totalCaloriesPerDay} kcal\n• Activity level: ${activityLevel}`;
-    } else if (weightTrend === 'increasing') {
-      analysisText = `• Weight shows a slight increase\n• Current intake: ${currentFeedingPlan.totalCaloriesPerDay} kcal\n• May benefit from a modest reduction`;
+  const handleSelectIntent = (intent: string) => {
+    if (intent !== 'ask-anything') {
+      const userMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        sender: 'user',
+        content: getIntentLabel(intent),
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, userMsg]);
     }
 
-    const analysis: ChatMessage = {
-      id: `msg-${Date.now()}-1`,
-      sender: 'ai',
-      content: analysisText,
-      timestamp: new Date(),
-    };
-    
-    setMessages(prev => [...prev, analysis]);
-
-    // Follow-up suggestion
-    setTimeout(() => {
-      const suggestion: ChatMessage = {
-        id: `msg-${Date.now()}-2`,
-        sender: 'ai',
-        content: `Based on this, would you like me to suggest any adjustments to the feeding plan?`,
-        timestamp: new Date(),
-        actions: [
-          {
-            id: 'yes-adjust',
-            label: 'Yes, optimize',
-            action: () => handleOptimize(),
-          },
-          {
-            id: 'keep-plan',
-            label: 'Keep current plan',
-            action: () => handleKeepPlan(),
-          },
-          {
-            id: 'tell-more',
-            label: 'Tell me more',
-            action: () => handleTellMore(),
-          },
-        ],
-      };
-      setMessages(prev => [...prev, suggestion]);
-      setConversationStage('suggestion');
-    }, 600);
+    switch (intent) {
+      case 'feeding-adjustment':
+        setConversationState('feeding-adjustment');
+        setTimeout(() => generateFeedingAdjustmentFlow(), 300);
+        break;
+      case 'weekly-check-in':
+        setConversationState('weekly-check-in');
+        setTimeout(() => generateWeeklyCheckInFlow(), 300);
+        break;
+      case 'food-recommendation':
+        setConversationState('food-recommendation');
+        setTimeout(() => generateFoodRecommendationFlow(), 300);
+        break;
+      case 'health-overview':
+        setConversationState('health-overview');
+        setTimeout(() => generateHealthOverviewFlow(), 300);
+        break;
+      case 'ask-anything':
+        setConversationState('follow-up');
+        // Just focus on text input, no need to add message
+        break;
+    }
   };
 
-  const handleOptimize = () => {
-    // Add user response
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      sender: 'user',
-      content: 'Yes, optimize',
-      timestamp: new Date(),
+  const getIntentLabel = (intent: string): string => {
+    const labels: Record<string, string> = {
+      'feeding-adjustment': 'Adjust feeding plan',
+      'weekly-check-in': 'Weekly check-in',
+      'food-recommendation': 'Food recommendation',
+      'health-overview': 'Health risk overview',
+      'ask-anything': 'Ask anything',
     };
-    setMessages(prev => [...prev, userMsg]);
-    setConversationStage('adjustment');
+    return labels[intent] || '';
+  };
 
-    // AI recommendation
+  const generateFeedingAdjustmentFlow = () => {
+    // Show analyzing message
+    const analyzingMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: 'Analyzing recent feeding data…',
+      timestamp: new Date(),
+      isAnalyzing: true,
+    };
+    setMessages(prev => [...prev, analyzingMsg]);
+
     setTimeout(() => {
-      const adjustmentPercentage = 5;
-      const newCalories = Math.round(
-        currentFeedingPlan.totalCaloriesPerDay * (100 - adjustmentPercentage) / 100
-      );
-      const calorieReduction = currentFeedingPlan.totalCaloriesPerDay - newCalories;
+      // Remove analyzing message and add analysis
+      setMessages(prev => prev.filter(m => !m.isAnalyzing));
 
-      const recommendation: ChatMessage = {
+      const analysis: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `I recommend reducing daily intake from ${currentFeedingPlan.totalCaloriesPerDay} kcal to ${newCalories} kcal.\n\nThis is a ${adjustmentPercentage}% reduction—gentle enough to implement smoothly while helping achieve your goals.`,
+        content: `Based on the last 2 weeks:\n• Weight is stable\n• Current goal: weight loss\n• Body score: 6/9\n\nI recommend reducing intake by 5%.`,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, recommendation]);
+      setMessages(prev => [...prev, analysis]);
 
-      // Adjustment action
       setTimeout(() => {
         const actionMsg: ChatMessage = {
           id: `msg-${Date.now()}-2`,
           sender: 'ai',
-          content: `New Daily Target: ${newCalories} kcal\nPrevious: ${currentFeedingPlan.totalCaloriesPerDay} kcal\n\nReady to apply this change?`,
+          content: 'What would you like to do?',
           timestamp: new Date(),
           actions: [
-            {
-              id: 'apply-adj',
-              label: 'Apply Adjustment',
-              action: () => handleApplyAdjustment(newCalories),
-            },
-            {
-              id: 'skip-adj',
-              label: 'Not now',
-              action: () => handleSkipAdjustment(),
-            },
+            { id: 'apply-adj', label: 'Apply adjustment', action: () => handleApplyFeedingAdjustment() },
+            { id: 'explain', label: 'Explain reasoning', action: () => handleExplainReasoning() },
+            { id: 'keep', label: 'Keep current plan', action: () => handleKeepCurrentPlan() },
           ],
         };
         setMessages(prev => [...prev, actionMsg]);
       }, 600);
-    }, 800);
+    }, 1200);
   };
 
-  const handleKeepPlan = () => {
+  const handleApplyFeedingAdjustment = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'Apply adjustment',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    const adjustmentPercentage = 5;
+    const newCalories = Math.round(
+      currentFeedingPlan.totalCaloriesPerDay * (100 - adjustmentPercentage) / 100
+    );
+
+    setTimeout(() => {
+      const confirmMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `✓ Plan updated!\n${currentFeedingPlan.totalCaloriesPerDay} kcal → ${newCalories} kcal\n\nI'll monitor ${catProfile.name}'s progress next week.`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, confirmMsg]);
+
+      // Call the callback to actually update the plan in App
+      if (onApplyPlanAdjustment) {
+        onApplyPlanAdjustment(newCalories);
+      }
+
+      setTimeout(() => showContinueHelping(), 600);
+    }, 600);
+  };
+
+  const handleExplainReasoning = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'Explain reasoning',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const explanation: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `A 5% reduction is gentle but effective. This approach:\n• Prevents rapid changes that stress your cat\n• Supports gradual, sustainable weight loss\n• Fits naturally into daily feeding routines`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, explanation]);
+
+      setTimeout(() => {
+        const followUp: ChatMessage = {
+          id: `msg-${Date.now()}-2`,
+          sender: 'ai',
+          content: 'Ready to apply it?',
+          timestamp: new Date(),
+          actions: [
+            { id: 'apply', label: 'Yes, apply', action: () => handleApplyFeedingAdjustment() },
+            { id: 'keep', label: 'Keep current', action: () => handleKeepCurrentPlan() },
+          ],
+        };
+        setMessages(prev => [...prev, followUp]);
+      }, 600);
+    }, 600);
+  };
+
+  const handleKeepCurrentPlan = () => {
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'user',
@@ -183,82 +255,364 @@ export function FeedingCoach({
       const confirmMsg: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `Perfect! I'll continue monitoring ${catProfile.name}'s progress. Feel free to check back next week for an updated analysis.`,
+        content: `Perfect! I'll continue monitoring ${catProfile.name}'s progress.`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, confirmMsg]);
+
+      setTimeout(() => showContinueHelping(), 600);
     }, 600);
   };
 
-  const handleTellMore = () => {
-    const userMsg: ChatMessage = {
+  const generateWeeklyCheckInFlow = () => {
+    const checkInMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
-      sender: 'user',
-      content: 'Tell me more',
+      sender: 'ai',
+      content: `It's time for our weekly check-in. Have you noticed any changes?`,
       timestamp: new Date(),
+      actions: [
+        { id: 'eating-more', label: 'Eating more', action: () => handleCheckInResponse('eating-more') },
+        { id: 'eating-less', label: 'Eating less', action: () => handleCheckInResponse('eating-less') },
+        { id: 'more-active', label: 'More active', action: () => handleCheckInResponse('more-active') },
+        { id: 'no-change', label: 'No change', action: () => handleCheckInResponse('no-change') },
+      ],
     };
-    setMessages(prev => [...prev, userMsg]);
-
-    setTimeout(() => {
-      const infoMsg: ChatMessage = {
-        id: `msg-${Date.now()}-1`,
-        sender: 'ai',
-        content: `The adjustment works by slightly reducing daily portions, which can help with gradual, sustainable weight management.\n\nSmall changes (3-5%) are easier to stick with and less disruptive to your cat's routine.`,
-        timestamp: new Date(),
-        actions: [
-          {
-            id: 'yes-optimize',
-            label: 'Yes, optimize',
-            action: () => handleOptimize(),
-          },
-          {
-            id: 'keep-current',
-            label: 'Keep current',
-            action: () => handleKeepPlan(),
-          },
-        ],
-      };
-      setMessages(prev => [...prev, infoMsg]);
-    }, 800);
+    setMessages(prev => [...prev, checkInMsg]);
   };
 
-  const handleApplyAdjustment = (newCalories: number) => {
+  const handleCheckInResponse = (response: string) => {
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'user',
-      content: 'Apply Adjustment',
+      content: getCheckInLabel(response),
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
 
     setTimeout(() => {
-      const confirmMsg: ChatMessage = {
+      let replyContent = '';
+      switch (response) {
+        case 'eating-more':
+          replyContent = `That's interesting! Increased appetite can indicate higher activity or a need for plan adjustment. Would you like me to recommend a small increase?`;
+          break;
+        case 'eating-less':
+          replyContent = `Good observation. Lower appetite might mean ${catProfile.name}'s satisfied at current portions, or it could signal something to monitor. Let's watch closely.`;
+          break;
+        case 'more-active':
+          replyContent = `Great news! More activity is excellent for overall health. This might allow for slightly higher calorie intake to fuel the activity.`;
+          break;
+        case 'no-change':
+          replyContent = `Perfect! Stability is exactly what we want. ${catProfile.name}'s on a good track.`;
+          break;
+      }
+
+      const replyMsg: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `✓ Plan updated! I'll monitor ${catProfile.name}'s progress next week.\n\n💡 Tip: Spread the reduction across both meals for easier adjustment.`,
+        content: replyContent,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, confirmMsg]);
+      setMessages(prev => [...prev, replyMsg]);
+
+      setTimeout(() => showContinueHelping(), 600);
     }, 600);
   };
 
-  const handleSkipAdjustment = () => {
+  const getCheckInLabel = (response: string): string => {
+    const labels: Record<string, string> = {
+      'eating-more': 'Eating more',
+      'eating-less': 'Eating less',
+      'more-active': 'More active',
+      'no-change': 'No change',
+    };
+    return labels[response] || '';
+  };
+
+  const generateFoodRecommendationFlow = () => {
+    const msg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: 'What concern are we addressing?',
+      timestamp: new Date(),
+      actions: [
+        { id: 'sensitive', label: 'Sensitive stomach', action: () => handleFoodRecommendation('sensitive-stomach') },
+        { id: 'weight', label: 'Weight control', action: () => handleFoodRecommendation('weight-control') },
+        { id: 'urinary', label: 'Urinary health', action: () => handleFoodRecommendation('urinary-health') },
+        { id: 'protein', label: 'High protein', action: () => handleFoodRecommendation('high-protein') },
+        { id: 'explore', label: 'Just exploring', action: () => handleFoodRecommendation('exploring') },
+      ],
+    };
+    setMessages(prev => [...prev, msg]);
+  };
+
+  const handleFoodRecommendation = (category: RecommendationCategory) => {
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'user',
-      content: 'Not now',
+      content: getCategoryLabel(category),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    // Show analyzing message
+    const analyzingMsg: ChatMessage = {
+      id: `msg-${Date.now()}-1`,
+      sender: 'ai',
+      content: 'Analyzing veterinary guidelines and community comments…',
+      timestamp: new Date(),
+      isAnalyzing: true,
+    };
+    setMessages(prev => [...prev, analyzingMsg]);
+
+    setTimeout(() => {
+      // Remove analyzing message
+      setMessages(prev => prev.filter(m => !m.isAnalyzing));
+
+      const foodCards = generateFoodCards(category);
+      const recommendationMsg: ChatMessage = {
+        id: `msg-${Date.now()}-2`,
+        sender: 'ai',
+        content: `Based on veterinary guidelines and community feedback, here are recommended foods for ${getCategoryLabel(category).toLowerCase()}:`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, recommendationMsg]);
+
+      // Add food cards as separate messages
+      foodCards.forEach((card, index) => {
+        setTimeout(() => {
+          const cardMsg: ChatMessage = {
+            id: `food-card-${Date.now()}-${index}`,
+            sender: 'ai',
+            content: `📌 ${card.foodName}\n\nWhy this is recommended:\n${card.reasons.map(r => `• ${r}`).join('\n')}`,
+            timestamp: new Date(),
+            actions: card.foodId ? [
+              { id: `view-${card.foodId}`, label: 'View in Food Library →', action: () => handleViewFood(card.foodId!) }
+            ] : [],
+          };
+          setMessages(prev => [...prev, cardMsg]);
+        }, 300 + (index * 300));
+      });
+
+      // Add continue helping prompt after cards
+      setTimeout(() => {
+        showContinueHelping();
+      }, 300 + (foodCards.length * 300) + 600);
+    }, 1200);
+  };
+
+  const getCategoryLabel = (category: RecommendationCategory): string => {
+    const labels: Record<RecommendationCategory, string> = {
+      'sensitive-stomach': 'Sensitive stomach',
+      'weight-control': 'Weight control',
+      'urinary-health': 'Urinary health',
+      'high-protein': 'High protein',
+      'exploring': 'Just exploring options',
+    };
+    return labels[category];
+  };
+
+  const generateFoodCards = (category: RecommendationCategory): FoodCard[] => {
+    const cards: Record<RecommendationCategory, FoodCard[]> = {
+      'sensitive-stomach': [
+        { foodName: 'Hill\'s Sensitive Stomach', foodId: 'hills-sensitive', reasons: ['Lower fat percentage', 'Highly digestible protein', 'Positive community reviews for vomiting reduction'] },
+        { foodName: 'Royal Canin Digestive Care', foodId: 'rc-digestive', reasons: ['Specialized for GI sensitivity', 'Moderate protein', 'Easy to digest formula'] },
+        { foodName: 'Purina Pro Plan Sensitive', foodId: 'purina-sensitive', reasons: ['Limited ingredients', 'Novel protein sources', 'High digestibility rating'] },
+      ],
+      'weight-control': [
+        { foodName: 'Royal Canin Weight Control', foodId: 'rc-weight', reasons: ['Lower calorie density', 'High fiber for satiety', 'Supports weight management'] },
+        { foodName: 'Hill\'s Science Diet Weight Management', foodId: 'hills-weight', reasons: ['Calorie-controlled formula', 'Increased fiber', 'Clinical study backed'] },
+        { foodName: 'Purina Pro Plan Weight Management', foodId: 'purina-weight', reasons: ['Reduced calories per serving', 'High protein retention', 'Community approved'] },
+      ],
+      'urinary-health': [
+        { foodName: 'Hill\'s Science Diet Urinary Care', foodId: 'hills-urinary', reasons: ['Magnesium controlled', 'FLUTD prevention formula', 'Veterinarian recommended'] },
+        { foodName: 'Royal Canin Urinary SO', foodId: 'rc-urinary', reasons: ['Prevents crystal formation', 'Balanced minerals', 'Clinical effectiveness'] },
+        { foodName: 'Purina Pro Plan Urinary Tract Health', foodId: 'purina-urinary', reasons: ['Mineral balance', 'Promotes healthy urinary pH', 'Prevention-focused'] },
+      ],
+      'high-protein': [
+        { foodName: 'Taste of the Wild High Prairie', foodId: 'totw-prairie', reasons: ['35%+ protein', 'Grain-free with real meat', 'Natural ingredients'] },
+        { foodName: 'Orijen Original', foodId: 'orijen-original', reasons: ['80% fresh meat ingredients', 'High biological value', 'Premium protein sources'] },
+        { foodName: 'Acana Grasslands', foodId: 'acana-grasslands', reasons: ['Meat-first formula', 'High protein content', 'Limited carbohydrates'] },
+      ],
+      'exploring': [
+        { foodName: 'Wellness Core Grain Free', foodId: 'wellness-core', reasons: ['Balanced nutrition', 'Real meat first', 'No artificial additives'] },
+        { foodName: 'Natural Balance Limited Ingredient', foodId: 'nb-limited', reasons: ['Hypoallergenic potential', 'Quality ingredients', 'Good digestibility'] },
+        { foodName: 'IAMS Proactive Health', foodId: 'iams-proactive', reasons: ['Balanced formula', 'Widely available', 'Good value'] },
+      ],
+    };
+    return cards[category] || [];
+  };
+
+  const handleViewFood = (foodId: string) => {
+    // Navigate to food library
+    onNavigate('library');
+  };
+
+  const generateHealthOverviewFlow = () => {
+    // Show analyzing message
+    const analyzingMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: `Analyzing ${catProfile.name}'s health profile…`,
+      timestamp: new Date(),
+      isAnalyzing: true,
+    };
+    setMessages(prev => [...prev, analyzingMsg]);
+
+    setTimeout(() => {
+      setMessages(prev => prev.filter(m => !m.isAnalyzing));
+
+      const healthMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `Based on ${catProfile.name}'s age (3y), weight (${catProfile.currentWeight}kg), and feeding pattern:\n\n• Obesity Risk: Moderate\n• Urinary Risk: Slightly Elevated\n• Diabetes Risk: Low`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, healthMsg]);
+
+      setTimeout(() => {
+        const actionMsg: ChatMessage = {
+          id: `msg-${Date.now()}-2`,
+          sender: 'ai',
+          content: 'Would you like to know more about any of these?',
+          timestamp: new Date(),
+          actions: [
+            { id: 'obesity', label: 'Reduce obesity risk', action: () => handleHealthRiskAction('obesity') },
+            { id: 'urinary', label: 'How to reduce urinary risk', action: () => handleHealthRiskAction('urinary') },
+            { id: 'diabetes', label: 'Prevent diabetes', action: () => handleHealthRiskAction('diabetes') },
+          ],
+        };
+        setMessages(prev => [...prev, actionMsg]);
+      }, 600);
+    }, 1200);
+  };
+
+  const handleHealthRiskAction = (risk: string) => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: getRiskLabel(risk),
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
 
     setTimeout(() => {
-      const confirmMsg: ChatMessage = {
+      let guidance = '';
+      switch (risk) {
+        case 'obesity':
+          guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely\n\nInterested in suitable foods for weight control?`;
+          break;
+        case 'urinary':
+          guidance = `Increase water intake (promote wet food)\nMaintain proper mineral balance\nRegular monitoring is key\n\nI can recommend foods for urinary health.`;
+          break;
+        case 'diabetes':
+          guidance = `Maintain healthy weight\nKeep consistent feeding schedule\nMonitor for early signs\n\nLow-carb, high-protein diets can help.`;
+          break;
+      }
+
+      const guidanceMsg: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `No problem! I'm here whenever you're ready. Have a great week with ${catProfile.name}! 🐱`,
+        content: guidance,
+        timestamp: new Date(),
+        actions: risk === 'obesity' || risk === 'urinary' ? [
+          { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) }
+        ] : [],
+      };
+      setMessages(prev => [...prev, guidanceMsg]);
+
+      setTimeout(() => showContinueHelping(), 600);
+    }, 600);
+  };
+
+  const getRiskLabel = (risk: string): string => {
+    const labels: Record<string, string> = {
+      'obesity': 'Reduce obesity risk',
+      'urinary': 'How to reduce urinary risk',
+      'diabetes': 'Prevent diabetes',
+    };
+    return labels[risk] || '';
+  };
+
+  const showFoodRecommendationFromHealth = (risk: string) => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'Recommend foods',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    const category: RecommendationCategory = risk === 'obesity' ? 'weight-control' : 'urinary-health';
+
+    setTimeout(() => {
+      const analyzingMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: 'Analyzing veterinary guidelines…',
+        timestamp: new Date(),
+        isAnalyzing: true,
+      };
+      setMessages(prev => [...prev, analyzingMsg]);
+
+      setTimeout(() => {
+        setMessages(prev => prev.filter(m => !m.isAnalyzing));
+
+        const foodCards = generateFoodCards(category);
+        foodCards.forEach((card, index) => {
+          setTimeout(() => {
+            const cardMsg: ChatMessage = {
+              id: `food-card-${Date.now()}-${index}`,
+              sender: 'ai',
+              content: `📌 ${card.foodName}\n\nWhy this is recommended:\n${card.reasons.map(r => `• ${r}`).join('\n')}`,
+              timestamp: new Date(),
+              actions: card.foodId ? [
+                { id: `view-${card.foodId}`, label: 'View in Food Library →', action: () => handleViewFood(card.foodId!) }
+              ] : [],
+            };
+            setMessages(prev => [...prev, cardMsg]);
+          }, 300 + (index * 300));
+        });
+
+        setTimeout(() => {
+          showContinueHelping();
+        }, 300 + (foodCards.length * 300) + 600);
+      }, 1200);
+    }, 600);
+  };
+
+  const showContinueHelping = () => {
+    const continueMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: 'Can I help you with anything else?',
+      timestamp: new Date(),
+      actions: [
+        { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
+        { id: 'health', label: 'Health insights', action: () => handleSelectIntent('health-overview') },
+        { id: 'adjust', label: 'Adjust plan', action: () => handleSelectIntent('feeding-adjustment') },
+        { id: 'no', label: 'No, thanks', action: () => handleEndConversation() },
+      ],
+    };
+    setMessages(prev => [...prev, continueMsg]);
+  };
+
+  const handleEndConversation = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'No, thanks',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const byeMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `Great! Feel free to reach out anytime. Cheers to ${catProfile.name}'s health! 🐱`,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, confirmMsg]);
+      setMessages(prev => [...prev, byeMsg]);
     }, 600);
   };
 
@@ -285,42 +639,14 @@ export function FeedingCoach({
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-foreground">Feeding Coach</h2>
+            <h2 className="text-foreground font-semibold">Feeding Coach</h2>
           </div>
           <div className="w-10" />
         </div>
       </div>
 
-      {/* Status Summary Card */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="bg-card rounded-2xl p-4 border border-border" style={{
-          background: 'linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(168,85,247,0.04) 100%)',
-          boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)',
-        }}>
-          <h3 className="text-foreground font-semibold text-sm mb-3">Current Status</h3>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-muted-foreground">Weight</span>
-              <p className="text-foreground font-semibold">{catProfile.currentWeight} kg</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Daily Intake</span>
-              <p className="text-foreground font-semibold">{currentFeedingPlan.totalCaloriesPerDay} kcal</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Body Score</span>
-              <p className="text-foreground font-semibold">6/9</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Trend</span>
-              <p className="text-foreground font-semibold">Stable</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-4">
         {messages.map((message) => (
           <div key={message.id} className={`flex ${message.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
             <div className={`max-w-xs rounded-2xl px-4 py-3 ${
@@ -328,8 +654,19 @@ export function FeedingCoach({
                 ? 'bg-muted text-foreground rounded-bl-none'
                 : 'bg-primary text-foreground rounded-br-none'
             }`}>
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              
+              {message.isAnalyzing ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              )}
+
               {/* Action Buttons */}
               {message.actions && message.actions.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -363,7 +700,7 @@ export function FeedingCoach({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <button
             onClick={handleSendMessage}

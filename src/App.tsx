@@ -237,9 +237,34 @@ export default function App() {
       p.id === profileId ? newProfile : p
     );
     setCatProfiles(updatedProfiles);
-    
+
     setPlanUpdateComparison(null);
     setCurrentScreen(targetScreen);
+  };
+
+  const handleApplyFeedingAdjustment = (newCalories: number) => {
+    if (!catProfile || !feedingPlan) return;
+
+    const selectedFood = foods.find(f => f.id === feedingPlan.foodId);
+
+    if (selectedFood) {
+      // Recalculate the feeding plan with new calories
+      const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
+
+      const updatedPlan: FeedingPlanType = {
+        ...feedingPlan,
+        totalCaloriesPerDay: Math.round(newCalories),
+        totalGramsPerDay: newGrams,
+        amGrams: Math.round(newGrams / 2),
+        pmGrams: Math.round(newGrams / 2),
+      };
+
+      // Update profile with new plan
+      const updatedProfiles = catProfiles.map(p =>
+        p.id === catProfile.id ? { ...catProfile, feedingPlan: updatedPlan } : p
+      );
+      setCatProfiles(updatedProfiles);
+    }
   };
 
   const handleFoodSelect = (foodId: string) => {
@@ -836,6 +861,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           currentFeedingPlan={feedingPlan}
           selectedFood={selectedFood}
           onNavigate={handleNavigate}
+          onApplyPlanAdjustment={handleApplyFeedingAdjustment}
         />
       )}
 
