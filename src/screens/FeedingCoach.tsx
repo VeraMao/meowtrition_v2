@@ -736,7 +736,7 @@ export function FeedingCoach({
                       <div
                         key={action.id}
                         onClick={action.action}
-                        className="text-xs px-3 py-2 rounded-lg transition-all active:scale-95 cursor-pointer text-foreground"
+                        className="text-xs px-3 py-2 rounded-lg transition-all active:scale-95 cursor-pointer text-foreground ml-auto"
                         style={{ backgroundColor: 'rgba(244, 205, 165, 0.75)' }}
                       >
                         {action.label}
