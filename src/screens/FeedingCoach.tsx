@@ -704,7 +704,7 @@ export function FeedingCoach({
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-4">
         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.sender === 'ai' ? 'justify-start' : 'justify-end'} px-2`}>
+          <div key={message.id} className={`flex ${message.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
             <div className={`rounded-2xl px-4 py-3 ${
               message.sender === 'ai'
                 ? 'bg-muted text-foreground rounded-bl-none'
