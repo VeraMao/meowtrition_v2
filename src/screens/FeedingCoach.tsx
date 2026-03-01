@@ -94,6 +94,13 @@ export function FeedingCoach({
     setMessages([greeting]);
   };
 
+  const handleRestartConversation = () => {
+    setMessages([]);
+    setInputValue('');
+    setConversationState('entry');
+    setTimeout(() => startConversation(), 100);
+  };
+
   const handleSelectIntent = (intent: string) => {
     if (intent !== 'ask-anything') {
       const userMsg: ChatMessage = {
@@ -732,7 +739,7 @@ export function FeedingCoach({
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
-          <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80" title="Start over the conversation">
+          <button onClick={handleRestartConversation} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80" title="Start over the conversation">
             <RotateCw className="w-5 h-5" />
             <span>Start over</span>
           </button>
