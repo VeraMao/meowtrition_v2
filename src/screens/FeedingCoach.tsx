@@ -639,7 +639,7 @@ export function FeedingCoach({
         // Flush current paragraph if it exists
         if (currentParagraph.length > 0) {
           elements.push(
-            <p key={`para-${index}`} className="mb-2">
+            <p key={`para-${index}`} className="text-sm mb-2">
               {currentParagraph.join(' ')}
             </p>
           );
@@ -648,7 +648,7 @@ export function FeedingCoach({
 
         // Add bullet point as a div
         elements.push(
-          <div key={`bullet-${index}`} className="flex gap-2 mb-1">
+          <div key={`bullet-${index}`} className="flex gap-2 mb-1 text-sm">
             <span className="text-primary flex-shrink-0">•</span>
             <span className="flex-1">{line.trim().substring(1).trim()}</span>
           </div>
@@ -657,7 +657,7 @@ export function FeedingCoach({
         // Empty line - treat as paragraph break
         if (currentParagraph.length > 0) {
           elements.push(
-            <p key={`para-${index}`} className="mb-2">
+            <p key={`para-${index}`} className="text-sm mb-2">
               {currentParagraph.join(' ')}
             </p>
           );
@@ -672,13 +672,13 @@ export function FeedingCoach({
     // Flush remaining paragraph
     if (currentParagraph.length > 0) {
       elements.push(
-        <p key={`para-${lines.length}`} className="mb-2">
+        <p key={`para-${lines.length}`} className="text-sm mb-2">
           {currentParagraph.join(' ')}
         </p>
       );
     }
 
-    return elements.length > 0 ? elements : <p>{content}</p>;
+    return elements.length > 0 ? elements : <p className="text-sm">{content}</p>;
   };
 
   return (
@@ -716,7 +716,7 @@ export function FeedingCoach({
                   <p className="text-sm">{message.content}</p>
                 </div>
               ) : (
-                <div className="text-sm space-y-0">
+                <div className="space-y-0">
                   {renderMessageContent(message.content)}
                 </div>
               )}
