@@ -179,4 +179,5 @@ export type Screen =
   | 'community'
   | 'manage-cats'
   | 'manage-foods'
-  | 'theme-selector';
+  | 'theme-selector'
+  | 'feeding-coach';

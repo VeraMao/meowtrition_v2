@@ -14,6 +14,7 @@ import { ShareZone } from './screens/ShareZone';
 import { ManageCats } from './screens/ManageCats';
 import { ManageFoods } from './screens/ManageFoods';
 import { ThemeSelector } from './screens/ThemeSelector';
+import { FeedingCoach } from './screens/FeedingCoach';
 import { CatProfile, FoodItem, FeedingPlan as FeedingPlanType, FeedingLog as FeedingLogType, Screen, AppSettings, ThemeName, FoodReview, CommunityPost } from './types';
 import { mockFoods } from './data/mockFoods';
 import { mockCommunityPosts } from './data/mockCommunityPosts';
@@ -236,9 +237,34 @@ export default function App() {
       p.id === profileId ? newProfile : p
     );
     setCatProfiles(updatedProfiles);
-    
+
     setPlanUpdateComparison(null);
     setCurrentScreen(targetScreen);
+  };
+
+  const handleApplyFeedingAdjustment = (newCalories: number) => {
+    if (!catProfile || !feedingPlan) return;
+
+    const selectedFood = foods.find(f => f.id === feedingPlan.foodId);
+
+    if (selectedFood) {
+      // Recalculate the feeding plan with new calories
+      const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
+
+      const updatedPlan: FeedingPlanType = {
+        ...feedingPlan,
+        totalCaloriesPerDay: Math.round(newCalories),
+        totalGramsPerDay: newGrams,
+        amGrams: Math.round(newGrams / 2),
+        pmGrams: Math.round(newGrams / 2),
+      };
+
+      // Update profile with new plan
+      const updatedProfiles = catProfiles.map(p =>
+        p.id === catProfile.id ? { ...catProfile, feedingPlan: updatedPlan } : p
+      );
+      setCatProfiles(updatedProfiles);
+    }
   };
 
   const handleFoodSelect = (foodId: string) => {
@@ -352,14 +378,20 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   const selectedFood = foods.find((f) => f.id === selectedFoodId);
 
-  const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile') => {
+  const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => {
     const screenMap: Record<typeof page, Screen> = {
       dashboard: 'dashboard',
       library: 'food-library',
       'feeding-log': 'feeding-log',
       profile: 'settings',
+      'feeding-coach': 'feeding-coach',
     };
     setCurrentScreen(screenMap[page]);
+  };
+
+  const handleViewFoodDetail = (foodId: string) => {
+    setSelectedFoodForDetail(foodId);
+    setCurrentScreen('food-detail');
   };
 
   const handleFoodSelectFromLibrary = (foodId: string) => {
@@ -654,6 +686,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           onNavigateToLog={() => setCurrentScreen('feeding-log')}
           onNavigateToSettings={() => setCurrentScreen('settings')}
           onNavigateToLibrary={() => setCurrentScreen('food-library')}
+          onNavigateToFeedingCoach={() => setCurrentScreen('feeding-coach')}
           allProfiles={catProfiles}
           onSwitchProfile={handleSwitchProfile}
           defaultWeightUnit={appSettings.unitPreferences.weight}
@@ -824,6 +857,17 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           onShareReview={handleAddReview}
           onNavigate={handleNavigate}
           currentProfile={catProfile || undefined}
+        />
+      )}
+
+      {currentScreen === 'feeding-coach' && catProfile && feedingPlan && (
+        <FeedingCoach
+          catProfile={catProfile}
+          currentFeedingPlan={feedingPlan}
+          selectedFood={selectedFood}
+          onNavigate={handleNavigate}
+          onApplyPlanAdjustment={handleApplyFeedingAdjustment}
+          onViewFoodDetail={handleViewFoodDetail}
         />
       )}
 

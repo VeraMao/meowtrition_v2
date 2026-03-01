@@ -18,6 +18,7 @@ interface DashboardProps {
   onNavigateToLog: () => void;
   onNavigateToSettings: () => void;
   onNavigateToLibrary: () => void;
+  onNavigateToFeedingCoach?: () => void;
   allProfiles?: CatProfile[];
   onSwitchProfile?: (profileId: string) => void;
   defaultWeightUnit?: WeightUnit;
@@ -33,6 +34,7 @@ export function Dashboard({
   onNavigateToLog,
   onNavigateToSettings,
   onNavigateToLibrary,
+  onNavigateToFeedingCoach,
   allProfiles = [],
   onSwitchProfile,
   defaultWeightUnit = 'kg',
@@ -371,6 +373,7 @@ export function Dashboard({
               if (page === 'feeding-log') onNavigateToLog();
               else if (page === 'library') onNavigateToLibrary();
               else if (page === 'profile') onNavigateToSettings();
+              else if (page === 'feeding-coach') onNavigateToFeedingCoach?.();
             }}
           />
         </div>
