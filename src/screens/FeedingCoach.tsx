@@ -730,7 +730,7 @@ export function FeedingCoach({
 
               {/* Action Buttons */}
               {message.actions && message.actions.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className={`mt-3 flex flex-wrap gap-2 ${message.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
                   {message.actions.map((action) => (
                     message.sender === 'ai' ? (
                       <div
