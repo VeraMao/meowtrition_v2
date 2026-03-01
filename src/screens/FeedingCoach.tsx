@@ -741,11 +741,10 @@ export function FeedingCoach({
         <div className="flex items-center justify-between p-4">
           <button onClick={handleRestartConversation} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80" title="Start over the conversation">
             <RotateCw className="w-5 h-5" />
-            <span>Start over</span>
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-foreground font-semibold">Feeding Coach</h2>
+            <h2 className="text-foreground font-semibold">MeowCoach</h2>
           </div>
           <div className="w-10" />
         </div>
