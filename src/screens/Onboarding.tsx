@@ -138,21 +138,26 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       subtitle: 'Plans adjust automatically as your cat\'s weight changes.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <div className="text-4xl mb-2 text-center font-light" style={{ fontSize: '40px', fontWeight: '300' }}>📈</div>
-          <div className="space-y-4 w-full px-4">
-            <div className="bg-card rounded-lg p-3 border border-border">
-              <p className="text-xs text-muted-foreground mb-2">Week 1: Target 250g</p>
-              <p className="text-sm font-medium text-foreground">Log daily portions</p>
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Log your cat's weight weekly</span>
             </div>
-            <div className="text-center text-xs text-muted-foreground">↓</div>
-            <div className="bg-card rounded-lg p-3 border border-border">
-              <p className="text-xs text-muted-foreground mb-2">Week 2: +0.2kg detected</p>
-              <p className="text-sm font-medium text-foreground">New target: 240g</p>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">AI detects changes automatically</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Feeding portions adjust in real-time</span>
             </div>
           </div>
-          <p className="text-center text-xs text-muted-foreground pt-2">
-            Feedback loop closes—no manual recalculation needed.
-          </p>
         </div>
       ),
     },
@@ -166,9 +171,16 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
             alt="Two cats side by side - orange tabby and cream colored cat"
             className="h-40 object-contain"
           />
-          <p className="text-center text-muted-foreground text-sm px-4 pt-2">
-            Manage multiple cats with ease, each with their own feeding plan.
-          </p>
+          <div className="space-y-3 w-full px-4">
+            <div className="bg-card rounded-lg p-3 border border-border">
+              <p className="text-sm font-medium text-foreground">Mittens (3kg, indoor)</p>
+              <p className="text-xs text-muted-foreground">Daily target: 220 kcal</p>
+            </div>
+            <div className="bg-card rounded-lg p-3 border border-border">
+              <p className="text-sm font-medium text-foreground">Whisker (5kg, active)</p>
+              <p className="text-xs text-muted-foreground">Daily target: 350 kcal</p>
+            </div>
+          </div>
         </div>
       ),
     },
