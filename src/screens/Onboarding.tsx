@@ -97,6 +97,35 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       ),
     },
     {
+      title: 'Meet Your AI Coach',
+      subtitle: 'Get personalized guidance for every feeding decision.',
+      content: (
+        <div className="flex flex-col items-center justify-center h-auto space-y-4">
+          <div className="text-5xl mb-2">🤖</div>
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Real-time nutrition analysis</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Food recommendations based on health goals</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Answers questions about feeding & diet sensitivities</span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
       title: 'Weekly Adaptation',
       subtitle: 'Plans adjust automatically as your cat\'s weight changes.',
       content: (
