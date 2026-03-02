@@ -101,7 +101,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       subtitle: 'Plans adjust automatically as your cat\'s weight changes.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <div className="text-5xl mb-2">📈</div>
+          <div className="text-4xl mb-2 text-center font-light" style={{ fontSize: '40px', fontWeight: '300' }}>📈</div>
           <div className="space-y-4 w-full px-4">
             <div className="bg-card rounded-lg p-3 border border-border">
               <p className="text-xs text-muted-foreground mb-2">Week 1: Target 250g</p>
@@ -120,21 +120,18 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       ),
     },
     {
-      title: 'Perfect for Multi-Cat Homes',
-      subtitle: 'Manage each cat independently—single or multiple profiles.',
+      title: 'Perfect for Multi-Cat Families',
+      subtitle: 'Switch between profiles and manage each cat\'s plan separately.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <div className="text-5xl mb-2">👥</div>
-          <div className="space-y-3 w-full px-4">
-            <div className="bg-card rounded-lg p-3 border border-border">
-              <p className="text-sm font-medium text-foreground">Mittens (3kg, indoor)</p>
-              <p className="text-xs text-muted-foreground">Daily target: 220 kcal</p>
-            </div>
-            <div className="bg-card rounded-lg p-3 border border-border">
-              <p className="text-sm font-medium text-foreground">Whisker (5kg, active)</p>
-              <p className="text-xs text-muted-foreground">Daily target: 350 kcal</p>
-            </div>
-          </div>
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2Fdc6c7dac88c54297ac69afab3ceaec08?format=webp&width=800"
+            alt="Two cats side by side - orange tabby and cream colored cat"
+            className="h-40 object-contain"
+          />
+          <p className="text-center text-muted-foreground text-sm px-4 pt-2">
+            Manage multiple cats with ease, each with their own feeding plan.
+          </p>
         </div>
       ),
     },
@@ -219,7 +216,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
               : 'animate-slide-in-left'
           }`}
         >
-          <h1 className="text-3xl font-bold text-foreground mb-3 text-center">
+          <h1 className="font-bold text-foreground mb-3 text-center" style={{ fontSize: '38px', marginLeft: 'auto', marginRight: 'auto' }}>
             {pages[currentPage].title}
           </h1>
           <p className="text-muted-foreground text-center text-sm mb-6">
