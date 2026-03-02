@@ -250,8 +250,91 @@ export function FeedingCoach({
 
     switch (intent) {
       case 'feeding-adjustment':
-        setConversationState('feeding-adjustment');
-        setTimeout(() => generateFeedingAdjustmentFlow(), 300);
+        // If no recent check-in, ask for one first
+        if (!lastCheckInResponse) {
+          const checkInPrompt: ChatMessage = {
+            id: `msg-${Date.now()}`,
+            sender: 'ai',
+            content: `Before I analyze your feeding plan, let me ask: Have you noticed any health changes with ${catProfile.name}?`,
+            timestamp: new Date(),
+            actions: [
+              { id: 'gain-weight', label: 'Gain Weight', action: () => {
+                setLastCheckInResponse('gain-weight');
+                const userMsg: ChatMessage = {
+                  id: `msg-${Date.now()}-user`,
+                  sender: 'user',
+                  content: 'Gain Weight',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, userMsg]);
+                setTimeout(() => {
+                  setConversationState('feeding-adjustment');
+                  generateFeedingAdjustmentFlow();
+                }, 300);
+              }},
+              { id: 'lose-weight', label: 'Lose Weight', action: () => {
+                setLastCheckInResponse('lose-weight');
+                const userMsg: ChatMessage = {
+                  id: `msg-${Date.now()}-user`,
+                  sender: 'user',
+                  content: 'Lose Weight',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, userMsg]);
+                setTimeout(() => {
+                  setConversationState('feeding-adjustment');
+                  generateFeedingAdjustmentFlow();
+                }, 300);
+              }},
+              { id: 'drinking-less', label: 'Drinking less water', action: () => {
+                setLastCheckInResponse('drinking-less');
+                const userMsg: ChatMessage = {
+                  id: `msg-${Date.now()}-user`,
+                  sender: 'user',
+                  content: 'Drinking less water',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, userMsg]);
+                setTimeout(() => {
+                  setConversationState('feeding-adjustment');
+                  generateFeedingAdjustmentFlow();
+                }, 300);
+              }},
+              { id: 'drinking-more', label: 'Drinking more water', action: () => {
+                setLastCheckInResponse('drinking-more');
+                const userMsg: ChatMessage = {
+                  id: `msg-${Date.now()}-user`,
+                  sender: 'user',
+                  content: 'Drinking more water',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, userMsg]);
+                setTimeout(() => {
+                  setConversationState('feeding-adjustment');
+                  generateFeedingAdjustmentFlow();
+                }, 300);
+              }},
+              { id: 'no-change', label: 'No change', action: () => {
+                setLastCheckInResponse('no-change');
+                const userMsg: ChatMessage = {
+                  id: `msg-${Date.now()}-user`,
+                  sender: 'user',
+                  content: 'No change',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, userMsg]);
+                setTimeout(() => {
+                  setConversationState('feeding-adjustment');
+                  generateFeedingAdjustmentFlow();
+                }, 300);
+              }},
+            ],
+          };
+          setMessages(prev => [...prev, checkInPrompt]);
+        } else {
+          setConversationState('feeding-adjustment');
+          setTimeout(() => generateFeedingAdjustmentFlow(), 300);
+        }
         break;
       case 'weekly-check-in':
         setConversationState('weekly-check-in');
