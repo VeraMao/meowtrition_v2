@@ -230,7 +230,7 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                           className="flex items-center justify-between py-2 px-3 rounded-xl"
                           style={{
                             backgroundColor: `var(--primary)20`,
-                            border: '1px solid rgba(59, 46, 37, 0.42)'
+                            border: '1px solid #f4cea5'
                           }}
                         >
                           <div style={{ color: 'var(--muted-foreground)' }}>
