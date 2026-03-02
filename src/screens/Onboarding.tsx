@@ -101,7 +101,11 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
       subtitle: 'Get personalized guidance for every feeding decision.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <div className="text-5xl mb-2">🤖</div>
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2F98f793fcc67145778327e6c53e603347?format=webp&width=800&height=1200"
+            alt="AI Coach cat character"
+            className="h-40 object-contain"
+          />
           <div className="space-y-3 w-full px-4">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
