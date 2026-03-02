@@ -398,8 +398,8 @@ export function FeedingCoach({
       content: `It's time for our weekly check-in. Have you noticed any changes?`,
       timestamp: new Date(),
       actions: [
-        { id: 'eating-more', label: 'Eating more', action: () => handleCheckInResponse('eating-more') },
-        { id: 'eating-less', label: 'Eating less', action: () => handleCheckInResponse('eating-less') },
+        { id: 'gain-weight', label: 'Gain Weight', action: () => handleCheckInResponse('gain-weight') },
+        { id: 'lose-weight', label: 'Lose Weight', action: () => handleCheckInResponse('lose-weight') },
         { id: 'more-active', label: 'More active', action: () => handleCheckInResponse('more-active') },
         { id: 'drinking-more', label: 'Drinking more water', action: () => handleCheckInResponse('drinking-more') },
         { id: 'drinking-less', label: 'Drinking less water', action: () => handleCheckInResponse('drinking-less') },
@@ -422,11 +422,11 @@ export function FeedingCoach({
     setTimeout(() => {
       let replyContent = '';
       switch (response) {
-        case 'eating-more':
-          replyContent = `That's interesting! Increased appetite can indicate higher activity or a need for plan adjustment. Would you like me to recommend a small increase?`;
+        case 'gain-weight':
+          replyContent = `I see ${catProfile.name} is gaining weight. We may want to reduce portions to maintain a healthy weight. Would you like me to adjust the feeding plan downward?`;
           break;
-        case 'eating-less':
-          replyContent = `Good observation. Lower appetite might mean ${catProfile.name}'s satisfied at current portions, or it could signal something to monitor. Let's watch closely.`;
+        case 'lose-weight':
+          replyContent = `${catProfile.name}'s losing weight. We might need to increase portions or check for any health concerns. Would you like me to adjust the feeding plan upward?`;
           break;
         case 'more-active':
           replyContent = `Great news! More activity is excellent for overall health. This might allow for slightly higher calorie intake to fuel the activity.`;
@@ -456,8 +456,8 @@ export function FeedingCoach({
 
   const getCheckInLabel = (response: string): string => {
     const labels: Record<string, string> = {
-      'eating-more': 'Eating more',
-      'eating-less': 'Eating less',
+      'gain-weight': 'Gain Weight',
+      'lose-weight': 'Lose Weight',
       'more-active': 'More active',
       'drinking-more': 'Drinking more water',
       'drinking-less': 'Drinking less water',
