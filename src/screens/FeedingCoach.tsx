@@ -63,6 +63,7 @@ export function FeedingCoach({
   const [inputValue, setInputValue] = useState('');
   const [conversationState, setConversationState] = useState<ConversationState>('entry');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastCheckInResponse, setLastCheckInResponse] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -101,7 +102,7 @@ export function FeedingCoach({
     setTimeout(() => startConversation(), 100);
   };
 
-  const generateFeedingPlanAnalysis = (): string => {
+  const generateFeedingPlanAnalysis = (checkInResponse?: string | null): string => {
     // Get foods from current feeding plan
     let planFoods: FoodItem[] = [];
     let foodList = '';
@@ -189,12 +190,33 @@ export function FeedingCoach({
     const calorieMin = currentFeedingPlan.calorieRangeMin || Math.round(currentFeedingPlan.totalCaloriesPerDay * 0.95);
     const calorieMax = currentFeedingPlan.calorieRangeMax || Math.round(currentFeedingPlan.totalCaloriesPerDay * 1.05);
     assessment += `• Daily calories: ${calorieMin}–${calorieMax} kcal (target: ${currentFeedingPlan.totalCaloriesPerDay})\n`;
-    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n`;
-    assessment += `• Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.\n\n`;
+    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n\n`;
+
+    // Add explanation about range
+    assessment += `💡 Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.\n`;
+
+    // Add warning based on check-in response
+    if (checkInResponse === 'drinking-less') {
+      assessment += `\n⚠️ ${catProfile.name}'s drinking less water — this is a concern for kidney and urinary health. Consider increasing wet food portions or using a water fountain to encourage hydration.\n`;
+    } else if (checkInResponse === 'drinking-more') {
+      assessment += `\n✨ ${catProfile.name}'s drinking more water — excellent for hydration and kidney health. Keep encouraging this positive habit.\n`;
+    } else if (checkInResponse === 'gain-weight') {
+      assessment += `\n⚠️ ${catProfile.name}'s gaining weight — we may need to adjust portions downward to maintain a healthy weight.\n`;
+    } else if (checkInResponse === 'lose-weight') {
+      assessment += `\n⚠️ ${catProfile.name}'s losing weight — we might need to increase portions or investigate any underlying health concerns.\n`;
+    }
+
+    assessment += `\n✨ Recommendation:\n`;
 
     // Personalized recommendation
     let recommendation = '';
-    if (catProfile.goal === 'weight-loss') {
+    if (checkInResponse === 'drinking-less') {
+      recommendation = `We need to closely monitor ${catProfile.name}'s water consumption. Consider switching to foods with higher moisture content, like wet/canned food, to boost hydration. Wet food like Fancy Feast can be a great addition to increase water intake alongside dry kibble.`;
+    } else if (checkInResponse === 'gain-weight') {
+      recommendation = `Consider reducing portions by 10-15% or choosing lower-calorie alternatives to manage weight gain. We can adjust the feeding plan to support healthy weight maintenance.`;
+    } else if (checkInResponse === 'lose-weight') {
+      recommendation = `We should monitor this closely and may need to increase portions or switch to higher-calorie foods. Let's ensure ${catProfile.name} is getting enough nutrition for healthy weight maintenance.`;
+    } else if (catProfile.goal === 'weight-loss') {
       if (avgCalories < 350) {
         recommendation = '💚 Your plan is ideal for weight loss goals. Keep current portions.';
       } else {
@@ -210,7 +232,7 @@ export function FeedingCoach({
       recommendation = '💚 Your plan supports balanced, healthy maintenance.';
     }
 
-    assessment += `✨ Recommendation:\n${recommendation}`;
+    assessment += recommendation;
 
     return assessment;
   };
@@ -277,7 +299,7 @@ export function FeedingCoach({
       setMessages(prev => prev.filter(m => !m.isAnalyzing));
 
       // Generate analysis based on current food nutrition and cat profile
-      const analysisContent = generateFeedingPlanAnalysis();
+      const analysisContent = generateFeedingPlanAnalysis(lastCheckInResponse);
       const analysis: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
@@ -411,6 +433,7 @@ export function FeedingCoach({
   };
 
   const handleCheckInResponse = (response: string) => {
+    setLastCheckInResponse(response);
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'user',
