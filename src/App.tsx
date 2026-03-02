@@ -20,7 +20,7 @@ import { mockFoods } from './data/mockFoods';
 import { mockCommunityPosts } from './data/mockCommunityPosts';
 import { ThemeProvider } from './components/ThemeProvider';
 import { PlanUpdateNotification } from './components/PlanUpdateNotification';
-import { calculateMER, calculateDailyFoodAmount, calculateCaloriesForGoal } from './utils/calculations';
+import { calculateMER, calculateDailyFoodAmount, calculateCaloriesForGoal, calculateCalorieRange } from './utils/calculations';
 
 export default function App() {
   const appScrollRef = React.useRef<HTMLDivElement>(null);
@@ -140,7 +140,8 @@ export default function App() {
         // New calories: calculate based on goal and updated profile
         // This will use target weight for loss/gain goals, current weight for maintain
         const newCalories = calculateCaloriesForGoal(profile, weightGoal, customFactor);
-        
+        const newCalorieRange = calculateCalorieRange(newCalories);
+
         const selectedFood = foods.find(f => f.id === existing.selectedFoodId);
         if (selectedFood) {
           const oldGrams = calculateDailyFoodAmount(
@@ -148,7 +149,7 @@ export default function App() {
             selectedFood.caloriesPerHundredGrams
           );
           const newGrams = calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams);
-          
+
           // Show comparison modal
           setPlanUpdateComparison({
             catName: profile.name,
@@ -206,6 +207,8 @@ export default function App() {
       const updatedPlan: FeedingPlanType = {
         ...newProfile.feedingPlan,
         totalCaloriesPerDay: Math.round(newCalories),
+        calorieRangeMin: newCalorieRange.min,
+        calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),
@@ -251,10 +254,13 @@ export default function App() {
     if (selectedFood) {
       // Recalculate the feeding plan with new calories
       const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
+      const newCalorieRange = calculateCalorieRange(newCalories);
 
       const updatedPlan: FeedingPlanType = {
         ...feedingPlan,
         totalCaloriesPerDay: Math.round(newCalories),
+        calorieRangeMin: newCalorieRange.min,
+        calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),

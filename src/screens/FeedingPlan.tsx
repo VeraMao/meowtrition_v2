@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Blend, Info, HelpCircle, ChevronDown } from 'lucide-react';
 import { CatProfile, FoodItem, FeedingPlan as FeedingPlanType, WeightGoal } from '../types';
-import { calculateMER, calculateDailyFoodAmount, calculateTargetCalories, calculateTreatAllowance, distributeMealsEvenly, getBodyConditionLabel, inferWeightGoal, getActivityFactor, calculateRER } from '../utils/calculations';
+import { calculateMER, calculateDailyFoodAmount, calculateTargetCalories, calculateTreatAllowance, distributeMealsEvenly, getBodyConditionLabel, inferWeightGoal, getActivityFactor, calculateRER, calculateCalorieRange } from '../utils/calculations';
 import { ButtonPrimary } from '../components/ButtonPrimary';
 
 interface FeedingPlanProps {
@@ -41,6 +41,7 @@ export function FeedingPlan({
 
   const mer = calculateMER(catProfile);
   const targetCalories = calculateTargetCalories(mer, weightGoal, customFactor);
+  const calorieRange = calculateCalorieRange(targetCalories);
   const dailyGrams = calculateDailyFoodAmount(
     targetCalories,
     selectedFood.caloriesPerHundredGrams
@@ -67,6 +68,8 @@ export function FeedingPlan({
     const plan: FeedingPlanType = {
       totalGramsPerDay: Math.round(dailyGrams),
       totalCaloriesPerDay: Math.round(targetCalories),
+      calorieRangeMin: calorieRange.min,
+      calorieRangeMax: calorieRange.max,
       amGrams,
       pmGrams,
       foodId: selectedFood.id,
@@ -244,7 +247,7 @@ export function FeedingPlan({
           <div className="grid grid-cols-2 gap-4 pt-4" style={{ borderTop: '1px solid rgba(59, 46, 37, 0.2)' }}>
             <div>
               <div className="text-[#6E5C50]">Calories</div>
-              <div className="text-xl text-[#3B2E25]">{Math.round(targetCalories)} kcal</div>
+              <div className="text-xl text-[#3B2E25]">{calorieRange.min}–{calorieRange.max} kcal</div>
             </div>
             <div>
               <div className="text-[#6E5C50]">Treats Allowed</div>

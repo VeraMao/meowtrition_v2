@@ -186,8 +186,11 @@ export function FeedingCoach({
 
     // Daily intake
     assessment += `\n📋 Current Feeding Plan:\n`;
-    assessment += `• Daily calories: ${currentFeedingPlan.totalCaloriesPerDay} kcal\n`;
-    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n\n`;
+    const calorieMin = currentFeedingPlan.calorieRangeMin || Math.round(currentFeedingPlan.totalCaloriesPerDay * 0.95);
+    const calorieMax = currentFeedingPlan.calorieRangeMax || Math.round(currentFeedingPlan.totalCaloriesPerDay * 1.05);
+    assessment += `• Daily calories: ${calorieMin}–${calorieMax} kcal (target: ${currentFeedingPlan.totalCaloriesPerDay})\n`;
+    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n`;
+    assessment += `• Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.\n\n`;
 
     // Personalized recommendation
     let recommendation = '';

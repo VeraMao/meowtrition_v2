@@ -535,7 +535,7 @@ export function MealMixOptimizer({
           )}
           {targetDailyKcal > 0 && (
             <p className="text-sm text-gray-500 mt-2">
-              Target calories: {Math.round(targetDailyKcal)} kcal / day
+              Target calories: {Math.round(targetDailyKcal * 0.95)}–{Math.round(targetDailyKcal * 1.05)} kcal / day
             </p>
           )}
         </div>

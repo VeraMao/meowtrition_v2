@@ -204,18 +204,18 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                     </div>
                     <div
                       className={`px-3 py-1 rounded-full ${
-                        totalCalories >= feedingPlan.totalCaloriesPerDay * 0.9 &&
-                        totalCalories <= feedingPlan.totalCaloriesPerDay * 1.1
+                        totalCalories >= (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95) &&
+                        totalCalories <= (feedingPlan.calorieRangeMax || feedingPlan.totalCaloriesPerDay * 1.05)
                           ? 'bg-green-100 text-green-700'
-                          : totalCalories < feedingPlan.totalCaloriesPerDay * 0.9
+                          : totalCalories < (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95)
                           ? 'bg-orange-100 text-orange-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {totalCalories >= feedingPlan.totalCaloriesPerDay * 0.9 &&
-                      totalCalories <= feedingPlan.totalCaloriesPerDay * 1.1
+                      {totalCalories >= (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95) &&
+                      totalCalories <= (feedingPlan.calorieRangeMax || feedingPlan.totalCaloriesPerDay * 1.05)
                         ? '✓ On track'
-                        : totalCalories < feedingPlan.totalCaloriesPerDay * 0.9
+                        : totalCalories < (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95)
                         ? '↓ Under'
                         : '↑ Over'}
                     </div>

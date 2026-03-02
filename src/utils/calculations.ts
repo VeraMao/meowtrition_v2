@@ -1,5 +1,11 @@
 import { CatProfile, WeightGoal, FoodItem, FoodPortion, BodyCondition, WeightUnit, PortionUnit } from '../types';
 
+export interface CalorieRange {
+  min: number;
+  max: number;
+  target: number;
+}
+
 export function calculateRER(weightKg: number): number {
   return 70 * Math.pow(weightKg, 0.75);
 }
@@ -84,6 +90,26 @@ export function calculateCaloriesForGoal(
 
   // Apply goal adjustment factor
   return calculateTargetCalories(mer, weightGoal, customFactor);
+}
+
+// Calculate calorie range (±5%) for a target calorie value
+export function calculateCalorieRange(targetCalories: number): CalorieRange {
+  const margin = targetCalories * 0.05;
+  return {
+    min: Math.round(targetCalories - margin),
+    max: Math.round(targetCalories + margin),
+    target: Math.round(targetCalories),
+  };
+}
+
+// Overload: Accept profile and weight goal, return range
+export function calculateCalorieRangeForGoal(
+  profile: CatProfile,
+  weightGoal: WeightGoal,
+  customFactor?: number
+): CalorieRange {
+  const target = calculateCaloriesForGoal(profile, weightGoal, customFactor);
+  return calculateCalorieRange(target);
 }
 
 // Calculate target weight based on current weight and weight goal
