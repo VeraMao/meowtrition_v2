@@ -228,7 +228,10 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                         <div
                           key={index}
                           className="flex items-center justify-between py-2 px-3 rounded-xl"
-                          style={{ backgroundColor: `var(--primary)20` }}
+                          style={{
+                            backgroundColor: `var(--primary)20`,
+                            border: '1px solid rgba(59, 46, 37, 0.42)'
+                          }}
                         >
                           <div>
                             <div style={{ color: 'var(--foreground)' }}>{log.grams}g</div>
