@@ -233,19 +233,13 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                             border: '1px solid rgba(59, 46, 37, 0.42)'
                           }}
                         >
-                          <div>
-                            <div style={{ color: 'var(--foreground)' }}>{log.grams}g</div>
-                            <div style={{ color: 'var(--muted-foreground)' }}>
-                              {new Date(log.timestamp).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })}
-                            </div>
+                          <div style={{ color: 'var(--muted-foreground)' }}>
+                            {new Date(log.timestamp).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
                           </div>
-                          <div className="text-right">
-                            <div style={{ color: 'var(--foreground)' }}>{Math.round(log.calories)} kcal</div>
-                            <div style={{ color: 'var(--muted-foreground)' }}>{displayName}</div>
-                          </div>
+                          <div style={{ color: 'var(--foreground)' }}>{displayName}</div>
                         </div>
                       );
                     })}
