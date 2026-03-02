@@ -230,7 +230,7 @@ export function Dashboard({
               {Math.round(todayCalories)} / {feedingPlan.calorieRangeMin && feedingPlan.calorieRangeMax ? `${feedingPlan.calorieRangeMin}–${feedingPlan.calorieRangeMax}` : Math.round(feedingPlan.totalCaloriesPerDay)} kcal
             </div>
             <div className="text-muted-foreground">
-              {Math.round(todayGrams)} / {Math.round(feedingPlan.totalGramsPerDay)} grams fed today
+              {Math.round(todayGrams)} / {feedingPlan.gramsRangeMin && feedingPlan.gramsRangeMax ? `${feedingPlan.gramsRangeMin}–${feedingPlan.gramsRangeMax}` : Math.round(feedingPlan.totalGramsPerDay)} grams fed today
             </div>
           </div>
         </div>

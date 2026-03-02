@@ -204,12 +204,17 @@ export default function App() {
       // Recalculate the feeding plan with new calories
       const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
       
+      const gramsMin = Math.round(calculateDailyFoodAmount(newCalorieRange.min, selectedFood.caloriesPerHundredGrams));
+      const gramsMax = Math.round(calculateDailyFoodAmount(newCalorieRange.max, selectedFood.caloriesPerHundredGrams));
+
       const updatedPlan: FeedingPlanType = {
         ...newProfile.feedingPlan,
         totalCaloriesPerDay: Math.round(newCalories),
         calorieRangeMin: newCalorieRange.min,
         calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
+        gramsRangeMin: gramsMin,
+        gramsRangeMax: gramsMax,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),
       };
@@ -255,6 +260,8 @@ export default function App() {
       // Recalculate the feeding plan with new calories
       const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
       const newCalorieRange = calculateCalorieRange(newCalories);
+      const gramsMin = Math.round(calculateDailyFoodAmount(newCalorieRange.min, selectedFood.caloriesPerHundredGrams));
+      const gramsMax = Math.round(calculateDailyFoodAmount(newCalorieRange.max, selectedFood.caloriesPerHundredGrams));
 
       const updatedPlan: FeedingPlanType = {
         ...feedingPlan,
@@ -262,6 +269,8 @@ export default function App() {
         calorieRangeMin: newCalorieRange.min,
         calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
+        gramsRangeMin: gramsMin,
+        gramsRangeMax: gramsMax,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),
       };

@@ -46,6 +46,12 @@ export function FeedingPlan({
     targetCalories,
     selectedFood.caloriesPerHundredGrams
   );
+  const dailyGramsMin = Math.round(
+    calculateDailyFoodAmount(calorieRange.min, selectedFood.caloriesPerHundredGrams)
+  );
+  const dailyGramsMax = Math.round(
+    calculateDailyFoodAmount(calorieRange.max, selectedFood.caloriesPerHundredGrams)
+  );
   const treatAllowance = calculateTreatAllowance(targetCalories, weightGoal);
 
   const [amPortion, setAmPortion] = useState(50);
@@ -67,6 +73,8 @@ export function FeedingPlan({
 
     const plan: FeedingPlanType = {
       totalGramsPerDay: Math.round(dailyGrams),
+      gramsRangeMin: dailyGramsMin,
+      gramsRangeMax: dailyGramsMax,
       totalCaloriesPerDay: Math.round(targetCalories),
       calorieRangeMin: calorieRange.min,
       calorieRangeMax: calorieRange.max,
@@ -240,7 +248,7 @@ export function FeedingPlan({
           <div className="mb-4">
             <div className="text-[#6E5C50]">Daily Recommendation for {catProfile.name}</div>
             <div className="mt-2">
-              <span className="text-5xl text-[#3B2E25]">{Math.round(dailyGrams)}</span>
+              <span className="text-5xl text-[#3B2E25]">{dailyGramsMin}–{dailyGramsMax}</span>
               <span className="text-2xl ml-2 text-[#3B2E25]">grams</span>
             </div>
           </div>
