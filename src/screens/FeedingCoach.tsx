@@ -299,8 +299,29 @@ export function FeedingCoach({
       // Remove analyzing message and add analysis
       setMessages(prev => prev.filter(m => !m.isAnalyzing));
 
-      // Generate analysis based on current food nutrition and cat profile
-      const analysisContent = generateFeedingPlanAnalysis(lastCheckInResponse);
+      // Hardcoded analysis with drinking less water warning
+      const analysisContent = `📊 Nutritional Analysis
+Food: Hill's Science Diet Adult Light Weight Management + Fancy Feast Classic Pate
+
+💪 Macronutrient Profile:
+• Protein: 21.0g • Moderate
+• Fat: 6.5g • Carbs: 19.0g
+• Calories: 163 kcal/100g
+
+🎯 Health Suitability:
+• Carbs: Moderate level
+
+📋 Current Feeding Plan:
+• Daily calories: 286–316 kcal (target: 301)
+• Daily amount: 187g
+
+💡 Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.
+
+⚠️ Chestnut's drinking less water — this is a concern for kidney and urinary health. Consider increasing wet food portions or using a water fountain to encourage hydration.
+
+✨ Recommendation:
+We need to closely monitor Chestnut's water consumption. Consider switching to foods with higher moisture content, like wet/canned food, to boost hydration. Wet food like Fancy Feast can be a great addition to increase water intake alongside dry kibble.`;
+
       const analysis: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
