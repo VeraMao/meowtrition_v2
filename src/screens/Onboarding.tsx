@@ -52,8 +52,22 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
           <img
             src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2F8f456458af9f4eb49d853a8494d0ff21?format=webp&width=800&height=1200"
             alt="Comparison of traditional feeding chart vs personalized feeding plan"
-            className="h-48 object-contain"
+            className="h-40 object-contain"
           />
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Static packaging tables designed for average cats</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Guessing portions based on your cat's appetite</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Manual adjustments with spreadsheets or notes</span>
+            </div>
+          </div>
         </div>
       ),
     },
