@@ -764,6 +764,7 @@ Reference: NRC (National Research Council) Nutrient Requirements for Cats`;
         timestamp: new Date(),
         actions: risk === 'obesity' || risk === 'urinary' ? [
           { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) },
+          { id: 'feeding-plan-consult', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
           { id: 'keep-monitoring', label: risk === 'urinary' ? 'Keep Monitoring' : 'No, thanks', action: () => handleHealthRiskNoThanks() }
         ] : [
           { id: 'understand', label: 'I understand', action: () => showContinueHelping() }
