@@ -444,7 +444,7 @@ We need to closely monitor Chestnut's water consumption. Consider switching to f
       actions: [
         { id: 'gain-weight', label: 'Gain Weight', action: () => handleCheckInResponse('gain-weight') },
         { id: 'lose-weight', label: 'Lose Weight', action: () => handleCheckInResponse('lose-weight') },
-        { id: 'more-active', label: 'More active', action: () => handleCheckInResponse('more-active') },
+        { id: 'less-active', label: 'Less active', action: () => handleCheckInResponse('less-active') },
         { id: 'drinking-more', label: 'Drinking more water', action: () => handleCheckInResponse('drinking-more') },
         { id: 'drinking-less', label: 'Drinking less water', action: () => handleCheckInResponse('drinking-less') },
         { id: 'no-change', label: 'No change', action: () => handleCheckInResponse('no-change') },
@@ -473,8 +473,8 @@ We need to closely monitor Chestnut's water consumption. Consider switching to f
         case 'lose-weight':
           replyContent = `${catProfile.name}'s losing weight. We might need to increase portions or check for any health concerns. Would you like me to adjust the feeding plan upward?`;
           break;
-        case 'more-active':
-          replyContent = `Great news! More activity is excellent for overall health. This might allow for slightly higher calorie intake to fuel the activity.`;
+        case 'less-active':
+          replyContent = `I see ${catProfile.name} is less active. We might want to reduce calorie intake slightly to maintain a healthy weight. Let's monitor how this affects ${catProfile.name}'s condition.`;
           break;
         case 'drinking-more':
           replyContent = `That's great! Increased water intake is excellent for kidney and urinary health. Keep encouraging ${catProfile.name} to stay hydrated.`;
@@ -503,7 +503,7 @@ We need to closely monitor Chestnut's water consumption. Consider switching to f
     const labels: Record<string, string> = {
       'gain-weight': 'Gain Weight',
       'lose-weight': 'Lose Weight',
-      'more-active': 'More active',
+      'less-active': 'Less active',
       'drinking-more': 'Drinking more water',
       'drinking-less': 'Drinking less water',
       'no-change': 'No change',
