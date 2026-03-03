@@ -235,7 +235,7 @@ export function AddFeedingModal({
               type="button"
             >
               <span className="text-muted-foreground">Food</span>
-              <span className="text-foreground">
+              <span className="text-foreground ml-auto text-right">
                 {selectedFood ? selectedFood.name : 'Select food'}
               </span>
             </button>

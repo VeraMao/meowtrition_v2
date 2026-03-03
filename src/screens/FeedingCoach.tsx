@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Send, Sparkles } from 'lucide-react';
+import { RotateCw, Send, Sparkles } from 'lucide-react';
 import { CatProfile, FeedingPlan, FoodItem } from '../types';
 import { BottomNav } from '../components/BottomNav';
 import { calculateDailyFoodAmount } from '../utils/calculations';
@@ -44,6 +44,7 @@ interface FeedingCoachProps {
   catProfile: CatProfile;
   currentFeedingPlan: FeedingPlan;
   selectedFood: FoodItem;
+  foods: FoodItem[];
   onNavigate: (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => void;
   onApplyPlanAdjustment?: (newCalories: number) => void;
   onViewFoodDetail?: (foodId: string) => void;
@@ -53,6 +54,7 @@ export function FeedingCoach({
   catProfile,
   currentFeedingPlan,
   selectedFood,
+  foods,
   onNavigate,
   onApplyPlanAdjustment,
   onViewFoodDetail,
@@ -61,6 +63,7 @@ export function FeedingCoach({
   const [inputValue, setInputValue] = useState('');
   const [conversationState, setConversationState] = useState<ConversationState>('entry');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastCheckInResponse, setLastCheckInResponse] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -82,14 +85,156 @@ export function FeedingCoach({
       content: `Hi ${catProfile.name}'s parent! 👋\nHow can I help you today?`,
       timestamp: new Date(),
       actions: [
-        { id: 'adjust', label: 'Adjust feeding plan', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'check-in', label: 'Weekly check-in', action: () => handleSelectIntent('weekly-check-in') },
+        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
         { id: 'health', label: 'Health risk overview', action: () => handleSelectIntent('health-overview') },
         { id: 'ask', label: 'Ask anything', action: () => handleSelectIntent('ask-anything') },
       ],
     };
     setMessages([greeting]);
+  };
+
+  const handleRestartConversation = () => {
+    setMessages([]);
+    setInputValue('');
+    setConversationState('entry');
+    setTimeout(() => startConversation(), 100);
+  };
+
+  const generateFeedingPlanAnalysis = (checkInResponse?: string | null): string => {
+    // Get foods from current feeding plan
+    let planFoods: FoodItem[] = [];
+    let foodList = '';
+
+    if (currentFeedingPlan.isMixed) {
+      // Mixed plan with multiple foods
+      const allPortions = [...(currentFeedingPlan.amPortions || []), ...(currentFeedingPlan.pmPortions || [])];
+      const uniqueFoodIds = Array.from(new Set(allPortions.map(p => p.foodId)));
+      planFoods = uniqueFoodIds
+        .map(id => foods.find(f => f.id === id))
+        .filter((f): f is FoodItem => f !== undefined);
+
+      foodList = planFoods.map(f => f.name).join(' + ');
+    } else if (currentFeedingPlan.foodId) {
+      // Single food plan
+      const food = foods.find(f => f.id === currentFeedingPlan.foodId);
+      if (food) {
+        planFoods = [food];
+        foodList = food.name;
+      }
+    }
+
+    if (planFoods.length === 0) {
+      return `📊 Feeding Plan Analysis for ${catProfile.name}\n\nProfile:\n• Age: ${catProfile.age}y\n• Weight: ${catProfile.currentWeight}kg\n• Goal: ${catProfile.goal}\n\nNo food plan set. Please select a food to get personalized analysis.`;
+    }
+
+    // Analyze overall nutrition
+    let totalProtein = 0;
+    let totalFat = 0;
+    let totalCarbs = 0;
+    let avgCalories = 0;
+    let isPrescription = planFoods.some(f => f.type === 'prescription');
+
+    planFoods.forEach(food => {
+      totalProtein += food.protein || 0;
+      totalFat += food.fat || 0;
+      totalCarbs += food.carbohydrate || 0;
+      avgCalories += food.caloriesPerHundredGrams;
+    });
+
+    const avgProtein = (totalProtein / planFoods.length).toFixed(1);
+    const avgCarbs = (totalCarbs / planFoods.length).toFixed(1);
+    const avgFat = (totalFat / planFoods.length).toFixed(1);
+    avgCalories = avgCalories / planFoods.length;
+
+    // Build fancy assessment
+    let assessment = '';
+
+    // Header
+    assessment += `📊 Nutritional Analysis\n`;
+    assessment += `Food: ${foodList}\n\n`;
+
+    // Macronutrient breakdown
+    assessment += `💪 Macronutrient Profile:\n`;
+    assessment += `• Protein: ${avgProtein}g `;
+    if (parseFloat(avgProtein) >= 30) {
+      assessment += '✓ Excellent (high-protein)\n';
+    } else if (parseFloat(avgProtein) >= 25) {
+      assessment += '✓ Good\n';
+    } else {
+      assessment += '• Moderate\n';
+    }
+
+    assessment += `• Fat: ${avgFat}g • Carbs: ${avgCarbs}g\n`;
+    assessment += `• Calories: ${Math.round(avgCalories)} kcal/100g\n\n`;
+
+    // Special markers for prescription food
+    if (isPrescription) {
+      assessment += `⚕️ PRESCRIPTION FORMULA\n`;
+      assessment += `Clinically formulated for specific health conditions\n\n`;
+    }
+
+    // Health assessment
+    assessment += `🎯 Health Suitability:\n`;
+    if (parseFloat(avgCarbs) <= 15) {
+      assessment += `• Carbs: Low level (optimal)\n`;
+    } else if (parseFloat(avgCarbs) <= 30) {
+      assessment += `• Carbs: Moderate level\n`;
+    } else {
+      assessment += `• Carbs: Higher level (monitor)\n`;
+    }
+
+    // Daily intake
+    assessment += `\n📋 Current Feeding Plan:\n`;
+    const calorieMin = currentFeedingPlan.calorieRangeMin || Math.round(currentFeedingPlan.totalCaloriesPerDay * 0.95);
+    const calorieMax = currentFeedingPlan.calorieRangeMax || Math.round(currentFeedingPlan.totalCaloriesPerDay * 1.05);
+    assessment += `• Daily calories: ${calorieMin}–${calorieMax} kcal (target: ${currentFeedingPlan.totalCaloriesPerDay})\n`;
+    assessment += `• Daily amount: ${currentFeedingPlan.totalGramsPerDay}g\n\n`;
+
+    // Add explanation about range
+    assessment += `💡 Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.\n`;
+
+    // Add warning based on check-in response
+    if (checkInResponse === 'drinking-less') {
+      assessment += `\n⚠️ ${catProfile.name}'s drinking less water — this is a concern for kidney and urinary health. Consider increasing wet food portions or using a water fountain to encourage hydration.\n`;
+    } else if (checkInResponse === 'drinking-more') {
+      assessment += `\n✨ ${catProfile.name}'s drinking more water — excellent for hydration and kidney health. Keep encouraging this positive habit.\n`;
+    } else if (checkInResponse === 'gain-weight') {
+      assessment += `\n⚠️ ${catProfile.name}'s gaining weight — we may need to adjust portions downward to maintain a healthy weight.\n`;
+    } else if (checkInResponse === 'lose-weight') {
+      assessment += `\n⚠️ ${catProfile.name}'s losing weight — we might need to increase portions or investigate any underlying health concerns.\n`;
+    }
+
+    assessment += `\n✨ Recommendation:\n`;
+
+    // Personalized recommendation
+    let recommendation = '';
+    if (checkInResponse === 'drinking-less') {
+      recommendation = `We need to closely monitor ${catProfile.name}'s water consumption. Consider switching to foods with higher moisture content, like wet/canned food, to boost hydration. Wet food like Fancy Feast can be a great addition to increase water intake alongside dry kibble.`;
+    } else if (checkInResponse === 'gain-weight') {
+      recommendation = `Consider reducing portions by 10-15% or choosing lower-calorie alternatives to manage weight gain. We can adjust the feeding plan to support healthy weight maintenance.`;
+    } else if (checkInResponse === 'lose-weight') {
+      recommendation = `We should monitor this closely and may need to increase portions or switch to higher-calorie foods. Let's ensure ${catProfile.name} is getting enough nutrition for healthy weight maintenance.`;
+    } else if (catProfile.goal === 'weight-loss') {
+      if (avgCalories < 350) {
+        recommendation = '💚 Your plan is ideal for weight loss goals. Keep current portions.';
+      } else {
+        recommendation = '💡 Consider reducing portions by 10-15% for better weight loss results.';
+      }
+    } else if (catProfile.goal === 'weight-gain') {
+      if (avgCalories > 380) {
+        recommendation = '💚 Your plan supports weight gain well. Continue current portions.';
+      } else {
+        recommendation = '💡 Consider increasing portions by 10-15% to support weight gain.';
+      }
+    } else {
+      recommendation = '💚 Your plan supports balanced, healthy maintenance.';
+    }
+
+    assessment += recommendation;
+
+    return assessment;
   };
 
   const handleSelectIntent = (intent: string) => {
@@ -105,6 +250,7 @@ export function FeedingCoach({
 
     switch (intent) {
       case 'feeding-adjustment':
+        setLastCheckInResponse('drinking-less');
         setConversationState('feeding-adjustment');
         setTimeout(() => generateFeedingAdjustmentFlow(), 300);
         break;
@@ -129,7 +275,7 @@ export function FeedingCoach({
 
   const getIntentLabel = (intent: string): string => {
     const labels: Record<string, string> = {
-      'feeding-adjustment': 'Adjust feeding plan',
+      'feeding-adjustment': 'Feeding Plan Consulting',
       'weekly-check-in': 'Weekly check-in',
       'food-recommendation': 'Food recommendation',
       'health-overview': 'Health risk overview',
@@ -153,10 +299,33 @@ export function FeedingCoach({
       // Remove analyzing message and add analysis
       setMessages(prev => prev.filter(m => !m.isAnalyzing));
 
+      // Hardcoded analysis with drinking less water warning
+      const analysisContent = `📊 Nutritional Analysis
+Food: Hill's Science Diet Adult Light Weight Management + Fancy Feast Classic Pate
+
+💪 Macronutrient Profile:
+• Protein: 21.0g • Moderate
+• Fat: 6.5g • Carbs: 19.0g
+• Calories: 163 kcal/100g
+
+🎯 Health Suitability:
+• Carbs: Moderate level
+
+📋 Current Feeding Plan:
+• Daily calories: 286–316 kcal (target: 301)
+• Daily amount: 187g
+
+💡 Why a range? The ±5% range accounts for natural variation in food measurements, cat appetite, and individual metabolism. Aim for the target, but small variations are normal and healthy.
+
+⚠️ Chestnut's drinking less water — this is a concern for kidney and urinary health. Consider increasing wet food portions or using a water fountain to encourage hydration.
+
+✨ Recommendation:
+We need to closely monitor Chestnut's water consumption. Consider switching to foods with higher moisture content, like wet/canned food, to boost hydration. Wet food like Fancy Feast can be a great addition to increase water intake alongside dry kibble.`;
+
       const analysis: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `Based on the last 2 weeks:\n• Weight is stable\n• Current goal: weight loss\n• Body score: 6/9\n\nI recommend reducing intake by 5%.`,
+        content: analysisContent,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, analysis]);
@@ -273,16 +442,20 @@ export function FeedingCoach({
       content: `It's time for our weekly check-in. Have you noticed any changes?`,
       timestamp: new Date(),
       actions: [
-        { id: 'eating-more', label: 'Eating more', action: () => handleCheckInResponse('eating-more') },
-        { id: 'eating-less', label: 'Eating less', action: () => handleCheckInResponse('eating-less') },
-        { id: 'more-active', label: 'More active', action: () => handleCheckInResponse('more-active') },
+        { id: 'gain-weight', label: 'Gain Weight', action: () => handleCheckInResponse('gain-weight') },
+        { id: 'lose-weight', label: 'Lose Weight', action: () => handleCheckInResponse('lose-weight') },
+        { id: 'less-active', label: 'Less active', action: () => handleCheckInResponse('less-active') },
+        { id: 'drinking-more', label: 'Drinking more water', action: () => handleCheckInResponse('drinking-more') },
+        { id: 'drinking-less', label: 'Drinking less water', action: () => handleCheckInResponse('drinking-less') },
         { id: 'no-change', label: 'No change', action: () => handleCheckInResponse('no-change') },
+        { id: 'other', label: 'Other concerns', action: () => handleCheckInOtherConcerns() },
       ],
     };
     setMessages(prev => [...prev, checkInMsg]);
   };
 
   const handleCheckInResponse = (response: string) => {
+    setLastCheckInResponse(response);
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'user',
@@ -294,14 +467,20 @@ export function FeedingCoach({
     setTimeout(() => {
       let replyContent = '';
       switch (response) {
-        case 'eating-more':
-          replyContent = `That's interesting! Increased appetite can indicate higher activity or a need for plan adjustment. Would you like me to recommend a small increase?`;
+        case 'gain-weight':
+          replyContent = `I see ${catProfile.name} is gaining weight. We may want to reduce portions to maintain a healthy weight. Would you like me to adjust the feeding plan downward?`;
           break;
-        case 'eating-less':
-          replyContent = `Good observation. Lower appetite might mean ${catProfile.name}'s satisfied at current portions, or it could signal something to monitor. Let's watch closely.`;
+        case 'lose-weight':
+          replyContent = `${catProfile.name}'s losing weight. We might need to increase portions or check for any health concerns. Would you like me to adjust the feeding plan upward?`;
           break;
-        case 'more-active':
-          replyContent = `Great news! More activity is excellent for overall health. This might allow for slightly higher calorie intake to fuel the activity.`;
+        case 'less-active':
+          replyContent = `I see ${catProfile.name} is less active. We might want to reduce calorie intake slightly to maintain a healthy weight. Let's monitor how this affects ${catProfile.name}'s condition.`;
+          break;
+        case 'drinking-more':
+          replyContent = `That's great! Increased water intake is excellent for kidney and urinary health. Keep encouraging ${catProfile.name} to stay hydrated.`;
+          break;
+        case 'drinking-less':
+          replyContent = `I see. Decreased water intake could be a concern. Try offering wet food or using a water fountain to encourage hydration. Monitor ${catProfile.name}'s health closely.`;
           break;
         case 'no-change':
           replyContent = `Perfect! Stability is exactly what we want. ${catProfile.name}'s on a good track.`;
@@ -322,12 +501,38 @@ export function FeedingCoach({
 
   const getCheckInLabel = (response: string): string => {
     const labels: Record<string, string> = {
-      'eating-more': 'Eating more',
-      'eating-less': 'Eating less',
-      'more-active': 'More active',
+      'gain-weight': 'Gain Weight',
+      'lose-weight': 'Lose Weight',
+      'less-active': 'Less active',
+      'drinking-more': 'Drinking more water',
+      'drinking-less': 'Drinking less water',
       'no-change': 'No change',
+      'other': 'Other concerns',
     };
     return labels[response] || '';
+  };
+
+  const handleCheckInOtherConcerns = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'Other concerns',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const aiMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `I'd like to hear more! Please describe any other changes you've noticed with ${catProfile.name}'s health or behavior.`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiMsg]);
+
+      // Set conversation state to allow free-form input
+      setConversationState('follow-up');
+    }, 600);
   };
 
   const generateFoodRecommendationFlow = () => {
@@ -414,34 +619,60 @@ export function FeedingCoach({
   };
 
   const generateFoodCards = (category: RecommendationCategory): FoodCard[] => {
-    const cards: Record<RecommendationCategory, FoodCard[]> = {
-      'sensitive-stomach': [
-        { foodName: 'Hill\'s Sensitive Stomach', foodId: 'hills-sensitive', reasons: ['Lower fat percentage', 'Highly digestible protein', 'Positive community reviews for vomiting reduction'] },
-        { foodName: 'Royal Canin Digestive Care', foodId: 'rc-digestive', reasons: ['Specialized for GI sensitivity', 'Moderate protein', 'Easy to digest formula'] },
-        { foodName: 'Purina Pro Plan Sensitive', foodId: 'purina-sensitive', reasons: ['Limited ingredients', 'Novel protein sources', 'High digestibility rating'] },
-      ],
-      'weight-control': [
-        { foodName: 'Royal Canin Weight Control', foodId: 'rc-weight', reasons: ['Lower calorie density', 'High fiber for satiety', 'Supports weight management'] },
-        { foodName: 'Hill\'s Science Diet Weight Management', foodId: 'hills-weight', reasons: ['Calorie-controlled formula', 'Increased fiber', 'Clinical study backed'] },
-        { foodName: 'Purina Pro Plan Weight Management', foodId: 'purina-weight', reasons: ['Reduced calories per serving', 'High protein retention', 'Community approved'] },
-      ],
-      'urinary-health': [
-        { foodName: 'Hill\'s Science Diet Urinary Care', foodId: 'hills-urinary', reasons: ['Magnesium controlled', 'FLUTD prevention formula', 'Veterinarian recommended'] },
-        { foodName: 'Royal Canin Urinary SO', foodId: 'rc-urinary', reasons: ['Prevents crystal formation', 'Balanced minerals', 'Clinical effectiveness'] },
-        { foodName: 'Purina Pro Plan Urinary Tract Health', foodId: 'purina-urinary', reasons: ['Mineral balance', 'Promotes healthy urinary pH', 'Prevention-focused'] },
-      ],
-      'high-protein': [
-        { foodName: 'Taste of the Wild High Prairie', foodId: 'totw-prairie', reasons: ['35%+ protein', 'Grain-free with real meat', 'Natural ingredients'] },
-        { foodName: 'Orijen Original', foodId: 'orijen-original', reasons: ['80% fresh meat ingredients', 'High biological value', 'Premium protein sources'] },
-        { foodName: 'Acana Grasslands', foodId: 'acana-grasslands', reasons: ['Meat-first formula', 'High protein content', 'Limited carbohydrates'] },
-      ],
-      'exploring': [
-        { foodName: 'Hill\'s Science Diet Adult', foodId: 'food-2', reasons: ['Complete and balanced nutrition', 'Veterinarian recommended', 'Supports overall cat health'] },
-        { foodName: 'Natural Balance Limited Ingredient', foodId: 'nb-limited', reasons: ['Hypoallergenic potential', 'Quality ingredients', 'Good digestibility'] },
-        { foodName: 'IAMS Proactive Health', foodId: 'iams-proactive', reasons: ['Balanced formula', 'Widely available', 'Good value'] },
-      ],
+    const categoryMapping: Record<RecommendationCategory, string[]> = {
+      'sensitive-stomach': ['food-5'], // Blue Buffalo Wilderness - grain-free, good for sensitive stomach
+      'weight-control': ['food-1', 'food-4', 'food-2'], // Royal Canin (weight-loss), Fancy Feast (low-cal), Hill's
+      'urinary-health': ['food-8', 'food-1', 'food-3'], // Hill's Prescription Diet c/d, Royal Canin, Purina
+      'high-protein': ['food-3', 'food-5', 'food-2'], // Purina (40g), Blue Buffalo (40g), Hill's (32g)
+      'exploring': ['food-1', 'food-2', 'food-4'], // Royal Canin, Hill's, Fancy Feast
     };
-    return cards[category] || [];
+
+    const foodIds = categoryMapping[category] || [];
+    const cards = foodIds
+      .map(foodId => {
+        const food = foods.find(f => f.id === foodId);
+        if (!food) return null;
+
+        const reasons = getRecommendationReasons(food, category);
+        return {
+          foodName: `${food.name}${food.brand ? ` (${food.brand})` : ''}`,
+          foodId: food.id,
+          reasons,
+        };
+      })
+      .filter((card): card is FoodCard => card !== null);
+
+    return cards;
+  };
+
+  const getRecommendationReasons = (food: FoodItem, category: RecommendationCategory): string[] => {
+    const reasons: Record<RecommendationCategory, Record<string, string[]>> = {
+      'sensitive-stomach': {
+        'food-5': ['Grain-free formula', 'Helps with sensitive stomach issues', 'High protein for good digestion'],
+      },
+      'weight-control': {
+        'food-1': ['Recommended for weight-loss', 'Controlled calorie density', 'High fiber for satiety'],
+        'food-4': ['Low-calorie option', 'Wet food promotes hydration', 'Helps with portion control'],
+        'food-2': ['High protein maintains muscle', 'Balanced formula for maintenance', 'Veterinarian recommended'],
+      },
+      'urinary-health': {
+        'food-8': ['⚕️ PRESCRIPTION FORMULA', 'Clinically tested - 89% reduction in urinary signs', 'Dissolves struvite stones in 27 days average', 'Controlled magnesium, calcium & phosphorus', 'Enriched with potassium citrate & Omega-3'],
+        'food-1': ['Balanced minerals for urinary health', 'Recommended for maintenance', 'Quality nutrition support'],
+        'food-3': ['High protein for overall health', 'Quality ingredients', 'Good mineral balance'],
+      },
+      'high-protein': {
+        'food-3': ['40g protein per 100g', 'High-protein formula', 'Supports muscle development'],
+        'food-5': ['40g protein per 100g', 'Grain-free with quality meat', 'High biological value'],
+        'food-2': ['32g protein per 100g', 'High-protein content', 'Veterinarian recommended'],
+      },
+      'exploring': {
+        'food-1': ['Complete and balanced nutrition', 'Good for indoor cats', 'Positive community reviews'],
+        'food-2': ['Complete and balanced nutrition', 'Veterinarian recommended', 'Supports overall health'],
+        'food-4': ['Quality ingredients', 'Popular choice', 'Easy to incorporate into diet'],
+      },
+    };
+
+    return reasons[category][food.id] || ['Quality food choice', 'Supports cat health'];
   };
 
   const handleViewFood = (foodId: string) => {
@@ -468,7 +699,7 @@ export function FeedingCoach({
       const healthMsg: ChatMessage = {
         id: `msg-${Date.now()}-1`,
         sender: 'ai',
-        content: `Based on ${catProfile.name}'s age (3y), weight (${catProfile.currentWeight}kg), and feeding pattern:\n\n• Obesity Risk: Moderate\n• Urinary Risk: Slightly Elevated\n• Diabetes Risk: Low`,
+        content: `Based on ${catProfile.name}'s profile, I noticed:\n\n• Urinary Risk: Slightly Elevated\n\nThis is important to monitor for cat health.`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, healthMsg]);
@@ -477,12 +708,10 @@ export function FeedingCoach({
         const actionMsg: ChatMessage = {
           id: `msg-${Date.now()}-2`,
           sender: 'ai',
-          content: 'Would you like to know more about any of these?',
+          content: 'Would you like to know more about reducing urinary risk?',
           timestamp: new Date(),
           actions: [
-            { id: 'obesity', label: 'Reduce obesity risk', action: () => handleHealthRiskAction('obesity') },
-            { id: 'urinary', label: 'How to reduce urinary risk', action: () => handleHealthRiskAction('urinary') },
-            { id: 'diabetes', label: 'Prevent diabetes', action: () => handleHealthRiskAction('diabetes') },
+            { id: 'urinary', label: 'Reduce urinary risk', action: () => handleHealthRiskAction('urinary') },
           ],
         };
         setMessages(prev => [...prev, actionMsg]);
@@ -503,10 +732,25 @@ export function FeedingCoach({
       let guidance = '';
       switch (risk) {
         case 'obesity':
-          guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely\n\nInterested in suitable foods for weight control?`;
+          guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely`;
           break;
         case 'urinary':
-          guidance = `Increase water intake (promote wet food)\nMaintain proper mineral balance\nRegular monitoring is key\n\nI can recommend foods for urinary health.`;
+          guidance = `Increase Water Intake (promote wet food):
+Cats naturally drink less from bowls due to their evolutionary water-seeking behavior. Wet food can increase water intake by up to 70% compared to dry kibble, helping maintain urine dilution which is critical for preventing urinary crystal formation.
+
+Maintain Proper Mineral Balance:
+Focus on foods with controlled levels of:
+• Magnesium (<12% dry matter basis) - per NRC guidelines
+• Phosphorus and calcium in appropriate ratios (1.1:1 to 1.5:1)
+• Reduced sodium to support overall health
+
+Regular Monitoring:
+• Monthly weight tracking to catch health changes early
+• Observe litter box habits for signs of discomfort
+• Schedule veterinary check-ups every 6-12 months
+• Adjust feeding plan based on progress and weight trends
+
+Reference: NRC (National Research Council) Nutrient Requirements for Cats`;
           break;
         case 'diabetes':
           guidance = `Maintain healthy weight\nKeep consistent feeding schedule\nMonitor for early signs\n\nLow-carb, high-protein diets can help.`;
@@ -519,10 +763,34 @@ export function FeedingCoach({
         content: guidance,
         timestamp: new Date(),
         actions: risk === 'obesity' || risk === 'urinary' ? [
-          { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) }
-        ] : [],
+          { id: 'food-rec', label: 'Recommend foods', action: () => showFoodRecommendationFromHealth(risk) },
+          { id: 'feeding-plan-consult', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
+          { id: 'keep-monitoring', label: risk === 'urinary' ? 'Keep Monitoring' : 'No, thanks', action: () => handleHealthRiskNoThanks() }
+        ] : [
+          { id: 'understand', label: 'I understand', action: () => showContinueHelping() }
+        ],
       };
       setMessages(prev => [...prev, guidanceMsg]);
+    }, 600);
+  };
+
+  const handleHealthRiskNoThanks = () => {
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      content: 'No, thanks',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const replyMsg: ChatMessage = {
+        id: `msg-${Date.now()}-1`,
+        sender: 'ai',
+        content: `Great! I'll monitor ${catProfile.name}'s health. Feel free to come back anytime if you need advice.`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, replyMsg]);
 
       setTimeout(() => showContinueHelping(), 600);
     }, 600);
@@ -578,10 +846,24 @@ export function FeedingCoach({
         });
 
         setTimeout(() => {
-          showContinueHelping();
+          showRecommendMoreOrDone();
         }, 300 + (foodCards.length * 300) + 600);
       }, 1200);
     }, 600);
+  };
+
+  const showRecommendMoreOrDone = () => {
+    const msg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'ai',
+      content: 'Would you like more food recommendations?',
+      timestamp: new Date(),
+      actions: [
+        { id: 'more-food', label: 'Recommend more foods', action: () => handleSelectIntent('food-recommendation') },
+        { id: 'done', label: 'No, thanks', action: () => handleEndConversation() },
+      ],
+    };
+    setMessages(prev => [...prev, msg]);
   };
 
   const showContinueHelping = () => {
@@ -593,7 +875,7 @@ export function FeedingCoach({
       actions: [
         { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
         { id: 'health', label: 'Health insights', action: () => handleSelectIntent('health-overview') },
-        { id: 'adjust', label: 'Adjust plan', action: () => handleSelectIntent('feeding-adjustment') },
+        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'no', label: 'No, thanks', action: () => handleEndConversation() },
       ],
     };
@@ -690,12 +972,12 @@ export function FeedingCoach({
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
-          <button onClick={() => onNavigate('dashboard')} className="p-2 -ml-2 active:scale-95">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
+          <button onClick={handleRestartConversation} className="flex items-center gap-2 px-2 py-1 -ml-2 active:scale-95 text-sm text-foreground hover:opacity-80" title="Start over the conversation">
+            <RotateCw className="w-5 h-5" />
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-foreground font-semibold">Feeding Coach</h2>
+            <h2 className="text-foreground font-semibold">MeowCoach</h2>
           </div>
           <div className="w-10" />
         </div>

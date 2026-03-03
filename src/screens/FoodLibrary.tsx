@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChevronLeft, Plus, Scan, Star, Info, HelpCircle } from 'lucide-react';
 import { FoodItem } from '../types';
 import { FoodCard } from '../components/FoodCard';
@@ -18,6 +18,7 @@ interface FoodLibraryProps {
 }
 
 export function FoodLibrary({ foods, onSelect, onBack, onAddFood, startWithAddForm = false, multiSelectMode = false, initialSelectedIds = [], onMultiSelect }: FoodLibraryProps) {
+  const foodListRef = useRef<HTMLDivElement>(null);
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
   const [selectedFoodIds, setSelectedFoodIds] = useState<string[]>(initialSelectedIds);
   const [showAddForm, setShowAddForm] = useState(startWithAddForm);
@@ -25,6 +26,13 @@ export function FoodLibrary({ foods, onSelect, onBack, onAddFood, startWithAddFo
   const [activeTab, setActiveTab] = useState<'dry' | 'wet' | 'treat' | 'prescription' | 'custom'>('dry');
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'calories'>('name');
   const [showCalorieHelper, setShowCalorieHelper] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    if (foodListRef.current) {
+      foodListRef.current.scrollTop = 0;
+    }
+  }, []);
   
   const [newFoodName, setNewFoodName] = useState('');
   const [newFoodBrand, setNewFoodBrand] = useState('');
@@ -469,7 +477,7 @@ export function FoodLibrary({ foods, onSelect, onBack, onAddFood, startWithAddFo
       </div>
 
       {/* Food List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-32">
+      <div ref={foodListRef} className="flex-1 overflow-y-auto p-6 space-y-4 pb-32">
         {filteredFoods.length === 0 && (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">{activeTab === 'treat' ? '🐾' : '🍽️'}</div>

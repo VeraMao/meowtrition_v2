@@ -3,6 +3,7 @@ import { ChevronLeft, Plus, X, HelpCircle } from 'lucide-react';
 import { CatProfile, FoodItem, FeedingPlan, WeightGoal, FoodPortion, MealSchedule } from '../types';
 import { FoodCard } from '../components/FoodCard';
 import { ButtonPrimary } from '../components/ButtonPrimary';
+import { calculateCalorieRange, calculateDailyFoodAmount } from '../utils/calculations';
 
 interface MealMixOptimizerProps {
   catProfile: CatProfile;
@@ -320,9 +321,21 @@ export function MealMixOptimizer({
     addMealSchedules(dryFood, dryMealsPerDay, dailyDryGrams, dryDailyCalories, 'Dry');
     addMealSchedules(wetFood, wetMealsPerDay, dailyWetGrams, wetDailyCalories, 'Wet');
 
+    const calorieRange = calculateCalorieRange(targetDailyKcal);
+    const gramsRangeMin = Math.round(
+      (calorieRange.min / targetDailyKcal) * totalGramsRounded
+    );
+    const gramsRangeMax = Math.round(
+      (calorieRange.max / targetDailyKcal) * totalGramsRounded
+    );
+
     const plan: FeedingPlan = {
       totalGramsPerDay: totalGramsRounded,
+      gramsRangeMin,
+      gramsRangeMax,
       totalCaloriesPerDay: totalCaloriesRounded,
+      calorieRangeMin: calorieRange.min,
+      calorieRangeMax: calorieRange.max,
       amGrams: Math.round(amGrams),
       pmGrams: Math.round(pmGrams),
       foodId: selectedFoodIds[0] || '',
@@ -535,7 +548,7 @@ export function MealMixOptimizer({
           )}
           {targetDailyKcal > 0 && (
             <p className="text-sm text-gray-500 mt-2">
-              Target calories: {Math.round(targetDailyKcal)} kcal / day
+              Target calories: {Math.round(targetDailyKcal * 0.95)}–{Math.round(targetDailyKcal * 1.05)} kcal / day
             </p>
           )}
         </div>

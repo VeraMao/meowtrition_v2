@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SplashScreen } from './screens/SplashScreen';
 import { Onboarding } from './screens/Onboarding';
 import { ProfileSetup } from './screens/ProfileSetup';
@@ -20,9 +20,10 @@ import { mockFoods } from './data/mockFoods';
 import { mockCommunityPosts } from './data/mockCommunityPosts';
 import { ThemeProvider } from './components/ThemeProvider';
 import { PlanUpdateNotification } from './components/PlanUpdateNotification';
-import { calculateMER, calculateDailyFoodAmount, calculateCaloriesForGoal } from './utils/calculations';
+import { calculateMER, calculateDailyFoodAmount, calculateCaloriesForGoal, calculateCalorieRange } from './utils/calculations';
 
 export default function App() {
+  const appScrollRef = React.useRef<HTMLDivElement>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [previousScreen, setPreviousScreen] = useState<Screen | null>(null);
   const [showAddCustomFood, setShowAddCustomFood] = useState(false);
@@ -139,7 +140,8 @@ export default function App() {
         // New calories: calculate based on goal and updated profile
         // This will use target weight for loss/gain goals, current weight for maintain
         const newCalories = calculateCaloriesForGoal(profile, weightGoal, customFactor);
-        
+        const newCalorieRange = calculateCalorieRange(newCalories);
+
         const selectedFood = foods.find(f => f.id === existing.selectedFoodId);
         if (selectedFood) {
           const oldGrams = calculateDailyFoodAmount(
@@ -147,7 +149,7 @@ export default function App() {
             selectedFood.caloriesPerHundredGrams
           );
           const newGrams = calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams);
-          
+
           // Show comparison modal
           setPlanUpdateComparison({
             catName: profile.name,
@@ -202,10 +204,17 @@ export default function App() {
       // Recalculate the feeding plan with new calories
       const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
       
+      const gramsMin = Math.round(calculateDailyFoodAmount(newCalorieRange.min, selectedFood.caloriesPerHundredGrams));
+      const gramsMax = Math.round(calculateDailyFoodAmount(newCalorieRange.max, selectedFood.caloriesPerHundredGrams));
+
       const updatedPlan: FeedingPlanType = {
         ...newProfile.feedingPlan,
         totalCaloriesPerDay: Math.round(newCalories),
+        calorieRangeMin: newCalorieRange.min,
+        calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
+        gramsRangeMin: gramsMin,
+        gramsRangeMax: gramsMax,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),
       };
@@ -250,11 +259,18 @@ export default function App() {
     if (selectedFood) {
       // Recalculate the feeding plan with new calories
       const newGrams = Math.round(calculateDailyFoodAmount(newCalories, selectedFood.caloriesPerHundredGrams));
+      const newCalorieRange = calculateCalorieRange(newCalories);
+      const gramsMin = Math.round(calculateDailyFoodAmount(newCalorieRange.min, selectedFood.caloriesPerHundredGrams));
+      const gramsMax = Math.round(calculateDailyFoodAmount(newCalorieRange.max, selectedFood.caloriesPerHundredGrams));
 
       const updatedPlan: FeedingPlanType = {
         ...feedingPlan,
         totalCaloriesPerDay: Math.round(newCalories),
+        calorieRangeMin: newCalorieRange.min,
+        calorieRangeMax: newCalorieRange.max,
         totalGramsPerDay: newGrams,
+        gramsRangeMin: gramsMin,
+        gramsRangeMax: gramsMax,
         amGrams: Math.round(newGrams / 2),
         pmGrams: Math.round(newGrams / 2),
       };
@@ -378,6 +394,13 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   const selectedFood = foods.find((f) => f.id === selectedFoodId);
 
+  // Auto scroll to top when currentScreen changes
+  React.useEffect(() => {
+    if (appScrollRef.current) {
+      appScrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [currentScreen]);
+
   const handleNavigate = (page: 'dashboard' | 'library' | 'feeding-log' | 'profile' | 'feeding-coach') => {
     const screenMap: Record<typeof page, Screen> = {
       dashboard: 'dashboard',
@@ -444,7 +467,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
 
   return (
     <ThemeProvider theme={activeTheme}>
-      <div className="fixed inset-0 bg-gray-100 overflow-y-auto">
+      <div ref={appScrollRef} className="fixed inset-0 bg-gray-100 overflow-y-auto">
         <div className="max-w-[390px] mx-auto bg-white min-h-screen shadow-xl relative">
           {currentScreen === 'splash' && (
             <SplashScreen onStart={() => setCurrentScreen('onboarding')} />
@@ -865,6 +888,7 @@ const handlePlanComplete = (plan: FeedingPlanType) => {
           catProfile={catProfile}
           currentFeedingPlan={feedingPlan}
           selectedFood={selectedFood}
+          foods={foods}
           onNavigate={handleNavigate}
           onApplyPlanAdjustment={handleApplyFeedingAdjustment}
           onViewFoodDetail={handleViewFoodDetail}

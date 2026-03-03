@@ -204,18 +204,18 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                     </div>
                     <div
                       className={`px-3 py-1 rounded-full ${
-                        totalCalories >= feedingPlan.totalCaloriesPerDay * 0.9 &&
-                        totalCalories <= feedingPlan.totalCaloriesPerDay * 1.1
+                        totalCalories >= (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95) &&
+                        totalCalories <= (feedingPlan.calorieRangeMax || feedingPlan.totalCaloriesPerDay * 1.05)
                           ? 'bg-green-100 text-green-700'
-                          : totalCalories < feedingPlan.totalCaloriesPerDay * 0.9
+                          : totalCalories < (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95)
                           ? 'bg-orange-100 text-orange-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {totalCalories >= feedingPlan.totalCaloriesPerDay * 0.9 &&
-                      totalCalories <= feedingPlan.totalCaloriesPerDay * 1.1
+                      {totalCalories >= (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95) &&
+                      totalCalories <= (feedingPlan.calorieRangeMax || feedingPlan.totalCaloriesPerDay * 1.05)
                         ? '✓ On track'
-                        : totalCalories < feedingPlan.totalCaloriesPerDay * 0.9
+                        : totalCalories < (feedingPlan.calorieRangeMin || feedingPlan.totalCaloriesPerDay * 0.95)
                         ? '↓ Under'
                         : '↑ Over'}
                     </div>
@@ -228,21 +228,18 @@ export function FeedingLog({ feedingLogs, foods, feedingPlan, selectedFood, onAd
                         <div
                           key={index}
                           className="flex items-center justify-between py-2 px-3 rounded-xl"
-                          style={{ backgroundColor: `var(--primary)20` }}
+                          style={{
+                            backgroundColor: `var(--primary)20`,
+                            border: '1px solid #f4cea5'
+                          }}
                         >
-                          <div>
-                            <div style={{ color: 'var(--foreground)' }}>{log.grams}g</div>
-                            <div style={{ color: 'var(--muted-foreground)' }}>
-                              {new Date(log.timestamp).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })}
-                            </div>
+                          <div style={{ color: 'var(--muted-foreground)' }}>
+                            {new Date(log.timestamp).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
                           </div>
-                          <div className="text-right">
-                            <div style={{ color: 'var(--foreground)' }}>{Math.round(log.calories)} kcal</div>
-                            <div style={{ color: 'var(--muted-foreground)' }}>{displayName}</div>
-                          </div>
+                          <div style={{ color: 'var(--foreground)' }}>{displayName}</div>
                         </div>
                       );
                     })}

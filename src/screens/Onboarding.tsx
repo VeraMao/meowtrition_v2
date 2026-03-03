@@ -45,82 +45,119 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
 
   const pages = [
     {
-      title: 'Every Cat Is Unique',
-      subtitle: 'No more guessing — we calculate the right portion for your cat\'s needs.',
+      title: 'Beyond the Packaging Label',
+      subtitle: 'Stop relying on one-size-fits-all feeding charts.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
           <img
-            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2Fef1f84f0c36c4b6586f42eaa5c095e09?format=webp&width=800"
-            alt="Cat silhouettes - Kitten, Adult, Chubby"
+            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2F8f456458af9f4eb49d853a8494d0ff21?format=webp&width=800&height=1200"
+            alt="Comparison of traditional feeding chart vs personalized feeding plan"
             className="h-40 object-contain"
           />
-          <p className="text-center text-muted-foreground text-sm px-4 pt-2">
-            Each cat gets a personalized plan based on age, weight, and activity level.
-          </p>
-        </div>
-      ),
-    },
-    {
-      title: 'Science You Can Trust',
-      subtitle: 'We use NRC research standards — safe and accurate.',
-      content: (
-        <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2F8a54b30b52554a2eaed2f87bd154bfca?format=webp&width=800"
-            alt="Chart with heart icon showing nutrition standards"
-            className="h-40 object-contain"
-          />
-          <div className="space-y-3 w-full px-4 pt-2">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-4 h-4 text-foreground" />
-              </div>
-              <span className="text-xs text-foreground">NRC Nutritional Standards</span>
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Static packaging tables designed for average cats</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-4 h-4 text-foreground" />
-              </div>
-              <span className="text-xs text-foreground">Veterinary Research-Backed</span>
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Guessing portions based on your cat's appetite</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-4 h-4 text-foreground" />
-              </div>
-              <span className="text-xs text-foreground">Continuously Updated Data</span>
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">❌</span>
+              <span className="text-sm text-muted-foreground">Manual adjustments with spreadsheets or notes</span>
             </div>
           </div>
         </div>
       ),
     },
     {
-      title: 'Track Meals & Progress',
-      subtitle: 'Celebrate healthy milestones with visual progress and daily insights.',
+      title: 'Science-Backed Portions',
+      subtitle: 'Personalized calculations based on NRC research standards.',
       content: (
-        <div className="flex flex-col items-center justify-center h-auto space-y-6">
-          <div className="relative w-32 h-32">
-            <svg viewBox="0 0 200 200" className="w-full h-full">
-              <circle cx="100" cy="100" r="90" fill="none" stroke="#E8D8C8" strokeWidth="8" />
-              <circle
-                cx="100"
-                cy="100"
-                r="90"
-                fill="none"
-                stroke="#F4CDA5"
-                strokeWidth="8"
-                strokeDasharray="283"
-                strokeDashoffset="71"
-                strokeLinecap="round"
-                className="transition-all duration-1000"
-              />
-              <text x="100" y="110" textAnchor="middle" className="text-4xl fill-foreground font-bold">
-                75%
-              </text>
-            </svg>
+        <div className="flex flex-col items-center justify-center h-auto space-y-4">
+          <div className="text-5xl mb-2">🔬</div>
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Age, weight & activity level analysis</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Veterinary research-backed calculations</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Covers diet sensitivities & health conditions</span>
+            </div>
           </div>
-          <p className="text-center text-muted-foreground text-sm px-4">
-            Monitor daily intake, track trends over 30 days, and watch your cat thrive.
-          </p>
+        </div>
+      ),
+    },
+    {
+      title: 'Meet Your AI Coach',
+      subtitle: 'Get personalized guidance for every feeding decision.',
+      content: (
+        <div className="flex flex-col items-center justify-center h-auto space-y-4">
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2F938b4fdfb7eb476d94e8aab83ef48cbb%2F98f793fcc67145778327e6c53e603347?format=webp&width=800&height=1200"
+            alt="AI Coach cat character"
+            className="h-40 object-contain"
+          />
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Real-time nutrition analysis</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Food recommendations based on health goals</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Answers questions about feeding & diet sensitivities</span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Weekly Adaptation',
+      subtitle: 'Plans adjust automatically as your cat\'s weight changes.',
+      content: (
+        <div className="flex flex-col items-center justify-center h-auto space-y-4">
+          <div className="space-y-3 w-full px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Log your cat's weight weekly</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">AI detects changes automatically</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-foreground" />
+              </div>
+              <span className="text-sm text-foreground">Feeding portions adjust in real-time</span>
+            </div>
+          </div>
         </div>
       ),
     },
@@ -134,27 +171,34 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
             alt="Two cats side by side - orange tabby and cream colored cat"
             className="h-40 object-contain"
           />
-          <p className="text-center text-muted-foreground text-sm px-4 pt-2">
-            Manage multiple cats with ease, each with their own feeding plan.
-          </p>
+          <div className="space-y-3 w-full px-4">
+            <div className="bg-card rounded-lg p-3 border border-border">
+              <p className="text-sm font-medium text-foreground">Mittens (3kg, indoor)</p>
+              <p className="text-xs text-muted-foreground">Daily target: 220 kcal</p>
+            </div>
+            <div className="bg-card rounded-lg p-3 border border-border">
+              <p className="text-sm font-medium text-foreground">Whisker (5kg, active)</p>
+              <p className="text-xs text-muted-foreground">Daily target: 350 kcal</p>
+            </div>
+          </div>
         </div>
       ),
     },
     {
-      title: 'Ready to Begin!',
-      subtitle: 'Tell us about your cat so we can start planning healthier meals.',
+      title: 'Ready to Get Started?',
+      subtitle: 'Create your cat\'s first profile in under 2 minutes.',
       content: (
         <div className="flex flex-col items-center justify-center h-auto space-y-4">
-          <div className="text-7xl animate-bounce">🐾</div>
+          <div className="text-7xl animate-bounce">🐱</div>
           <div className="space-y-2 text-center">
-            <p className="text-foreground font-medium">Create Your Cat Profile</p>
+            <p className="text-foreground font-medium">Tell us about your cat</p>
             <p className="text-sm text-muted-foreground px-4">
-              In just a few steps, we'll calculate the perfect meal plan for your furry friend.
+              We'll calculate the perfect portion plan based on their unique needs.
             </p>
           </div>
           <p className="text-center text-foreground text-sm tracking-wider mt-4 font-light">
             <span className="block text-xs text-muted-foreground mb-2">✨ ✨ ✨</span>
-            Small changes, big purrs
+            Science-backed daily. Adapted weekly.
           </p>
         </div>
       ),
@@ -221,7 +265,7 @@ export function Onboarding({ onComplete, onSkip }: OnboardingProps) {
               : 'animate-slide-in-left'
           }`}
         >
-          <h1 className="text-3xl font-bold text-foreground mb-3 text-center">
+          <h1 className="font-bold text-foreground mb-3 text-center" style={{ fontSize: '38px', marginLeft: 'auto', marginRight: 'auto' }}>
             {pages[currentPage].title}
           </h1>
           <p className="text-muted-foreground text-center text-sm mb-6">

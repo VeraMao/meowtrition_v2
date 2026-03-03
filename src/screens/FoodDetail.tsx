@@ -78,6 +78,104 @@ export function FoodDetail({
     );
   };
 
+  const renderNutritionAnalysis = () => {
+    const protein = food.protein || 0;
+    const fat = food.fat || 0;
+    const carbs = food.carbohydrate || 0;
+    const fiber = food.fiber || 0;
+    const calories = food.caloriesPerHundredGrams;
+
+    // Calculate protein-to-calorie ratio (g protein per 1000 kcal)
+    const proteinRatio = calories > 0 ? ((protein * 1000) / calories).toFixed(1) : 0;
+
+    // Assess obesity risk
+    let obesityRisk = 'Moderate';
+    if (calories > 380) {
+      obesityRisk = 'Higher (High calorie density)';
+    } else if (calories < 320) {
+      obesityRisk = 'Lower (Low calorie option)';
+    }
+
+    // Assess carbohydrate level
+    let carbAssessment = 'Moderate';
+    let carbIcon = '⚠️';
+    if (carbs <= 15) {
+      carbAssessment = 'Low (optimal for cats)';
+      carbIcon = '✅';
+    } else if (carbs > 40) {
+      carbAssessment = 'High (monitor intake)';
+      carbIcon = '⚠️';
+    } else {
+      carbIcon = '✓';
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className="bg-white/50 border border-purple-200 rounded-lg p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h4 className="text-foreground font-semibold text-sm">💪 Protein Quality</h4>
+              <p className="text-muted-foreground text-xs mt-1">{proteinRatio}g per 1000 kcal</p>
+              <p className="text-muted-foreground text-xs mt-2">
+                {protein >= 30 ? '✓ Excellent protein content for muscle and tissue maintenance.' : protein >= 25 ? '✓ Good protein level.' : '• Moderate protein content.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/50 border border-orange-200 rounded-lg p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h4 className="text-foreground font-semibold text-sm">🔥 Obesity Risk Score</h4>
+              <p className="text-muted-foreground text-xs mt-1">{obesityRisk}</p>
+              <p className="text-muted-foreground text-xs mt-2">
+                {calories > 380 ? 'High calorie density - suitable for active cats or weight gain diets.' : calories < 320 ? 'Good for weight management. Monitor portions for less active cats.' : 'Balanced calorie profile for maintenance diets.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h4 className="text-foreground font-semibold text-sm">{carbIcon} Carbohydrate Level</h4>
+              <p className="text-muted-foreground text-xs mt-1">{carbs}% ({carbAssessment})</p>
+              <p className="text-muted-foreground text-xs mt-2">
+                {carbs <= 15 ? 'Optimal for obligate carnivores. Ideal for urinary and digestive health.' : carbs > 40 ? 'Consider pairing with lower-carb foods or wet food options.' : 'Balanced level suitable for most indoor cats.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/50 border border-green-200 rounded-lg p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h4 className="text-foreground font-semibold text-sm">🌿 Fiber Content</h4>
+              <p className="text-muted-foreground text-xs mt-1">{fiber}%</p>
+              <p className="text-muted-foreground text-xs mt-2">
+                {fiber >= 6 ? '✓ High fiber supports digestive health and healthy litter box output.' : fiber >= 3 ? '✓ Good fiber level for digestive support.' : '• Moderate fiber content.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/50 border border-red-200 rounded-lg p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <h4 className="text-foreground font-semibold text-sm">⚖️ Overall Assessment</h4>
+              <p className="text-muted-foreground text-xs mt-2">
+                {food.tags?.includes('Vet recommended') && '✓ Veterinarian recommended. '}
+                {food.type === 'prescription' && '⚕️ Prescription formula for specific health needs. '}
+                This food is {food.recommendedFor?.includes('weight-loss') ? 'ideal for weight loss diets. ' : food.recommendedFor?.includes('weight-gain') ? 'suitable for weight gain support. ' : 'suitable for maintenance diets. '}
+                Caloric density: {calories} kcal/100g.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const totalProtein = food.protein || 0;
   const totalFat = food.fat || 0;
   const totalCarbs = food.carbohydrate || 0;
@@ -232,7 +330,7 @@ export function FoodDetail({
           </div>
         </div>
 
-        {/* AI Nutrition Insights */}
+        {/* Upload Nutrition Info */}
         <div className="bg-card rounded-2xl p-5 border border-border" style={{
           background: 'linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(168,85,247,0.04) 100%)',
           boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)',
@@ -242,70 +340,42 @@ export function FoodDetail({
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100/80 text-purple-700 text-xs font-semibold">
                   <Sparkles className="w-3 h-3" />
-                  AI
+                  AI Analysis
                 </span>
               </div>
-              <h3 className="text-foreground font-semibold">AI Nutrition Insights</h3>
+              <h3 className="text-foreground font-semibold">Upload Nutrition Info</h3>
             </div>
           </div>
 
           {!showAINutritionInsights ? (
             <div className="space-y-3">
               <p className="text-muted-foreground text-sm mb-4">
-                Get an AI analysis of this food's nutritional profile and potential health implications.
+                Upload a photo of the nutrition label to get AI-powered nutritional analysis for your cat.
               </p>
 
               <div className="space-y-2">
+                <button className="w-full py-3 border border-purple-200 text-purple-600 rounded-xl active:scale-[0.98] transition-all text-sm font-medium flex items-center justify-center gap-2 hover:bg-purple-50">
+                  <Upload className="w-4 h-4" />
+                  Upload Package Photo
+                </button>
+
                 <button
                   onClick={handleAnalyzeNutrition}
                   disabled={isLoadingNutritionAnalysis}
                   className="w-full py-3 rounded-xl active:scale-[0.98] transition-all text-sm font-medium disabled:opacity-70 text-black"
-                  style={{ border: '1px solid #e4d5d9' }}
+                  style={{ background: 'rgba(244, 205, 165, 0)', border: '1px solid #e4d5d9' }}
                 >
-                  {isLoadingNutritionAnalysis ? 'Analyzing...' : 'Analyze this Food'}
-                </button>
-
-                <button className="w-full py-3 border border-purple-200 text-purple-600 rounded-xl active:scale-[0.98] transition-all text-sm font-medium flex items-center justify-center gap-2 hover:bg-purple-50">
-                  <Upload className="w-4 h-4" />
-                  Upload package photo
+                  {isLoadingNutritionAnalysis ? 'Analyzing...' : 'Analyze This Food'}
                 </button>
               </div>
 
               <p className="text-muted-foreground text-xs mt-4">
-                💡 Tip: Upload a photo of the nutrition label for instant analysis.
+                💡 Tip: Upload a photo of the nutrition label for instant AI analysis.
               </p>
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="bg-white/50 border border-purple-200 rounded-lg p-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <h4 className="text-foreground font-semibold text-sm">Protein-to-Calorie Ratio</h4>
-                    <p className="text-muted-foreground text-xs mt-1">78g per 1000 kcal</p>
-                    <p className="text-muted-foreground text-xs mt-2">Excellent protein content for muscle maintenance.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/50 border border-orange-200 rounded-lg p-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <h4 className="text-foreground font-semibold text-sm">Obesity Risk Score</h4>
-                    <p className="text-muted-foreground text-xs mt-1">Moderate</p>
-                    <p className="text-muted-foreground text-xs mt-2">Monitor portion sizes, especially for less active cats.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <h4 className="text-foreground font-semibold text-sm">Carbohydrate Load</h4>
-                    <p className="text-muted-foreground text-xs mt-1">High</p>
-                    <p className="text-muted-foreground text-xs mt-2">Consider lower-carb options if your cat has sensitivity.</p>
-                  </div>
-                </div>
-              </div>
+              {renderNutritionAnalysis()}
 
               <button
                 onClick={() => setShowAINutritionInsights(false)}

@@ -79,7 +79,11 @@ export interface MealSchedule {
 
 export interface FeedingPlan {
   totalGramsPerDay: number;
+  gramsRangeMin?: number;
+  gramsRangeMax?: number;
   totalCaloriesPerDay: number;
+  calorieRangeMin?: number;
+  calorieRangeMax?: number;
   amGrams: number;
   pmGrams: number;
   foodId: string;

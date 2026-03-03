@@ -166,13 +166,17 @@ export function Settings({
                     <div className="flex-1 bg-muted rounded-xl p-3">
                       <div className="text-muted-foreground">Daily Amount</div>
                       <div className="text-foreground">
-                        {Math.round(catProfile.feedingPlan.totalGramsPerDay)}g
+                        {catProfile.feedingPlan.gramsRangeMin && catProfile.feedingPlan.gramsRangeMax
+                          ? `${catProfile.feedingPlan.gramsRangeMin}–${catProfile.feedingPlan.gramsRangeMax}`
+                          : `${Math.round(catProfile.feedingPlan.totalGramsPerDay * 0.95)}–${Math.round(catProfile.feedingPlan.totalGramsPerDay * 1.05)}`}g
                       </div>
                     </div>
                     <div className="flex-1 bg-muted rounded-xl p-3">
                       <div className="text-muted-foreground">Daily Calories</div>
                       <div className="text-foreground">
-                        {Math.round(catProfile.feedingPlan.totalCaloriesPerDay)} kcal
+                        {catProfile.feedingPlan.calorieRangeMin && catProfile.feedingPlan.calorieRangeMax
+                          ? `${catProfile.feedingPlan.calorieRangeMin}–${catProfile.feedingPlan.calorieRangeMax}`
+                          : `${Math.round(catProfile.feedingPlan.totalCaloriesPerDay * 0.95)}–${Math.round(catProfile.feedingPlan.totalCaloriesPerDay * 1.05)}`} kcal
                       </div>
                     </div>
                   </div>
