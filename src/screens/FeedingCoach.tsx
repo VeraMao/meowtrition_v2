@@ -735,7 +735,22 @@ We need to closely monitor Chestnut's water consumption. Consider switching to f
           guidance = `Reduce calorie intake gradually (5-10% reduction)\nIncrease playtime and activity\nMonitor portion sizes closely`;
           break;
         case 'urinary':
-          guidance = `Increase water intake (promote wet food)\nMaintain proper mineral balance\nRegular monitoring is key`;
+          guidance = `Increase Water Intake (promote wet food):
+Cats naturally drink less from bowls due to their evolutionary water-seeking behavior. Wet food can increase water intake by up to 70% compared to dry kibble, helping maintain urine dilution which is critical for preventing urinary crystal formation.
+
+Maintain Proper Mineral Balance:
+Focus on foods with controlled levels of:
+• Magnesium (<12% dry matter basis) - per NRC guidelines
+• Phosphorus and calcium in appropriate ratios (1.1:1 to 1.5:1)
+• Reduced sodium to support overall health
+
+Regular Monitoring:
+• Monthly weight tracking to catch health changes early
+• Observe litter box habits for signs of discomfort
+• Schedule veterinary check-ups every 6-12 months
+• Adjust feeding plan based on progress and weight trends
+
+Reference: NRC (National Research Council) Nutrient Requirements for Cats`;
           break;
         case 'diabetes':
           guidance = `Maintain healthy weight\nKeep consistent feeding schedule\nMonitor for early signs\n\nLow-carb, high-protein diets can help.`;
