@@ -85,8 +85,8 @@ export function FeedingCoach({
       content: `Hi ${catProfile.name}'s parent! 👋\nHow can I help you today?`,
       timestamp: new Date(),
       actions: [
-        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'check-in', label: 'Weekly check-in', action: () => handleSelectIntent('weekly-check-in') },
+        { id: 'adjust', label: 'Feeding Plan Consulting', action: () => handleSelectIntent('feeding-adjustment') },
         { id: 'food', label: 'Food recommendation', action: () => handleSelectIntent('food-recommendation') },
         { id: 'health', label: 'Health risk overview', action: () => handleSelectIntent('health-overview') },
         { id: 'ask', label: 'Ask anything', action: () => handleSelectIntent('ask-anything') },
