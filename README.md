@@ -1,6 +1,5 @@
 
-  # CatFeeder App Design - V2
-  Vera Mao's UIUX Final
+  # CatFeeder App Design - V3
 
 
   ## Running the code
